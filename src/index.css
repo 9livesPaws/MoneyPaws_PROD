@@ -62,7 +62,3 @@ button, a, input, select, textarea, [role="button"] {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-/* Leave room for the native AdMob banner above the bottom nav */
-.native-app .native-pad { padding-bottom: 150px; }
-/* The 50px AdMob banner sits at the very bottom; lift the nav bar above it */
-.native-app .app-bottom-nav { bottom: 50px; }

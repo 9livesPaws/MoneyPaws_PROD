@@ -7,7 +7,7 @@ export function fireRewardConfetti(originY = 0.6) {
       spread: 70,
       origin: { y: originY },
       colors: ['#F59E0B', '#10B981', '#3B82F6', '#EC4899', '#FBBF24'],
-      disableForReducedMotion: true,
+      disableForReducedMotion: false,
     });
   } catch {
     // Graceful fallback

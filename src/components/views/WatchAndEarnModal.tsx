@@ -107,10 +107,8 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
     const result = await showRewardedAd(); // real AdMob rewarded ad
     setAdLoading(false);
     if (result === 'rewarded') {
-      sound.playFanfare();
-      fireRewardConfetti(0.4);
       onRewardClaimed(sponsor.pawsReward);
-      onClose();
+      onClose(); // the celebration screen appears right after
     } else if (result === 'dismissed') {
       setAdMsg('Ad closed early. Watch it to the end to earn your reward.');
     } else {
@@ -174,7 +172,7 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
                 <Play className="w-7 h-7 fill-slate-950 ml-1" />
               </button>
               <span className="text-xs font-bold text-amber-300 mt-3">
-                Tap to Watch & Earn +{sponsor.pawsReward} Paws
+                Tap to Watch & Earn +200 PawCoins
               </span>
               <span className="text-[10px] text-slate-400 mt-0.5">Duration: 12 seconds</span>
             </div>
@@ -192,7 +190,7 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
               <span className="font-fredoka text-lg font-bold text-white">Video Completed!</span>
               <div className="text-amber-400 font-extrabold text-xl font-mono mt-0.5 flex items-center gap-1">
                 <Sparkles className="w-4 h-4" />
-                <span>+{sponsor.pawsReward} Paws ($0.08)</span>
+                <span>+200 PawCoins (₱0.20)</span>
               </div>
               <span className="text-[11px] text-slate-400 mt-1">Ready to credit to your balance</span>
             </div>
@@ -213,7 +211,7 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
         <div className="p-4 bg-slate-900 flex flex-col gap-2.5">
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span>Brand: <strong className="text-slate-200">{sponsor.brand}</strong></span>
-            <span className="text-emerald-400 font-semibold font-mono">Reward: +{sponsor.pawsReward} Paws</span>
+            <span className="text-emerald-400 font-semibold font-mono">Reward: +200 PawCoins</span>
           </div>
 
           {isCompleted ? (
@@ -222,7 +220,7 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
               className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <Sparkles className="w-4 h-4 fill-slate-950" />
-              <span>Collect +{sponsor.pawsReward} Paws</span>
+              <span>Collect +200 PawCoins</span>
             </button>
           ) : isPlaying ? (
             <div className="w-full py-2.5 text-center text-xs text-slate-400 bg-slate-800/60 rounded-xl border border-slate-700/60">
@@ -234,7 +232,7 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
               className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm shadow-lg shadow-amber-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
             >
               <Play className="w-4 h-4 fill-slate-950" />
-              <span>Start Watch & Earn (+{sponsor.pawsReward} Paws)</span>
+              <span>Start Watch & Earn (+200 PawCoins)</span>
             </button>
           )}
 

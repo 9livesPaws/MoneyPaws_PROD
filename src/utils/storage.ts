@@ -59,6 +59,14 @@ export const DEFAULT_USER_STATE: UserState = {
 
 const keyFor = (userId?: string) => (userId ? `${STORAGE_KEY}_${userId}` : STORAGE_KEY);
 
+export function hasSavedState(userId?: string): boolean {
+  try {
+    return localStorage.getItem(keyFor(userId)) !== null;
+  } catch {
+    return false;
+  }
+}
+
 export function loadUserState(userId?: string): UserState {
   if (typeof window === 'undefined') return DEFAULT_USER_STATE;
   try {
@@ -95,8 +103,8 @@ export function formatPaws(paws: number): string {
 }
 
 export function formatUsd(paws: number): string {
-  const usd = paws / 1000;
-  return `$${usd.toFixed(2)}`;
+  const php = paws / 1000;
+  return `₱${php.toFixed(2)}`;
 }
 
 

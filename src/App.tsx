@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthScreen } from './components/AuthScreen';
+import { RewardCelebration } from './components/RewardCelebration';
 import { initAds, showBottomBanner, hideBanner, resumeBanner, removeBanner, isNativeAds } from './utils/ads';
+import { pushProgress, pullProgress } from './utils/supabase';
 import { getSupabase, getCurrentSession, isAuthBusy, signOut, supabaseConfigured } from './utils/supabase';
-import { loadUserState, saveUserState, formatPhp } from './utils/storage';
+import { loadUserState, saveUserState, formatPhp, hasSavedState } from './utils/storage';
 import { UserState, Transaction, SupportTicket, SUPPORT_EMAIL } from './types';
 import { sound } from './utils/sound';
 import { haptics } from './utils/haptics';
@@ -67,38 +69,55 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     | 'socialChallenge'
   >(null);
 
-  // Ads start only after login, a moment after the first screen is drawn (keeps startup fast).
+  // Progress sync: restore after reinstall, then save to Supabase every 30s and when the app is backgrounded.
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const syncReady = useRef(!userId || hasSavedState(userId));
+  const lastSig = useRef('');
+
   useEffect(() => {
-    if (!isNativeAds) return;
-    const t = setTimeout(() => {
-      initAds().then(() => showBottomBanner());
-    }, 1500);
-    // Hide the banner while typing so it never covers the keyboard or inputs.
-    let resumeTimer: ReturnType<typeof setTimeout>;
-    const isField = (el: EventTarget | null) =>
-      el instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
-    const onIn = (e: FocusEvent) => {
-      if (isField(e.target)) {
-        clearTimeout(resumeTimer);
-        hideBanner();
-      }
-    };
-    const onOut = (e: FocusEvent) => {
-      if (isField(e.target)) {
-        clearTimeout(resumeTimer);
-        resumeTimer = setTimeout(() => resumeBanner(), 400);
-      }
-    };
-    document.addEventListener('focusin', onIn);
-    document.addEventListener('focusout', onOut);
+    if (!userId || syncReady.current) return;
+    let alive = true;
+    pullProgress(userId)
+      .then((saved) => {
+        if (alive && saved) setState({ ...saved, userName: username || saved.userName, userEmail: email || saved.userEmail });
+      })
+      .catch(() => {})
+      .finally(() => {
+        syncReady.current = true;
+      });
     return () => {
-      clearTimeout(t);
-      clearTimeout(resumeTimer);
-      document.removeEventListener('focusin', onIn);
-      document.removeEventListener('focusout', onOut);
-      removeBanner();
+      alive = false;
     };
-  }, []);
+  }, [userId, username, email]);
+
+  useEffect(() => {
+    if (!userId) return;
+    const push = async () => {
+      if (!syncReady.current) return;
+      const s = stateRef.current;
+      const sig = [s.balancePhp, s.totalEarnedPhp, s.adsWatchedToday, s.stepsToday, s.gamesPlayedToday, s.tapMineCount, s.consecutiveDays, s.referralCount, s.transactions.length].join('|');
+      if (sig === lastSig.current) return;
+      lastSig.current = sig;
+      try {
+        await pushProgress(userId, username || s.userName, email || s.userEmail, s);
+      } catch {
+        lastSig.current = ''; // try again next time
+      }
+    };
+    const first = setTimeout(push, 5000);
+    const iv = setInterval(push, 30000);
+    const onVis = () => {
+      if (document.visibilityState === 'hidden') push();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearTimeout(first);
+      clearInterval(iv);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [userId, username, email]);
+
 
   // Synchronize sound & haptics enabled state
   useEffect(() => {
@@ -125,6 +144,12 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
       });
     }, 45000);
     return () => clearInterval(timer);
+  }, []);
+
+  // Celebration screen (confetti + PawCoins + peso value) for claimed rewards
+  const [celebration, setCelebration] = useState<{ php: number; title: string; key: number } | null>(null);
+  const celebrate = useCallback((php: number, title: string) => {
+    setCelebration({ php, title, key: Date.now() });
   }, []);
 
   // Add earnings helper
@@ -184,6 +209,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
   // Convert steps to real balance
   const handleConvertSteps = useCallback(
     (stepsConverted: number, cashReward: number) => {
+      celebrate(cashReward, `${stepsConverted} steps converted`);
       setState((prev) => {
         const nextBalance = Number((prev.balancePhp + cashReward).toFixed(2));
         const nextTotal = Number((prev.totalEarnedPhp + cashReward).toFixed(2));
@@ -214,6 +240,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
   const handleClaimDailyStreak = useCallback((day: number) => {
     const rewards = [0.50, 0.75, 1.00, 1.25, 1.50, 2.00, 5.00];
     const earned = rewards[Math.min(day - 1, rewards.length - 1)] || 0.50;
+    celebrate(earned, `Day ${day} daily login bonus`);
 
     setState((prev) => {
       const nextBalance = Number((prev.balancePhp + earned).toFixed(2));
@@ -245,6 +272,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
   // Watch Rewarded Ad Completed
   const handleAdRewardClaimed = useCallback((pawsScore: number) => {
     const cash = 0.20; // ₱0.20 per rewarded ad
+    celebrate(cash, 'Rewarded ad watched');
     setState((prev) => {
       const nextBalance = Number((prev.balancePhp + cash).toFixed(2));
       const nextTotal = Number((prev.totalEarnedPhp + cash).toFixed(2));
@@ -267,7 +295,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
         transactions: [newTx, ...prev.transactions].slice(0, 50),
       };
     });
-  }, []);
+  }, [celebrate]);
 
   // Simulate friend referral
   const handleSimulateReferral = useCallback(() => {
@@ -327,6 +355,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
   // Claim Daily Mission Reward
   const handleClaimMission = useCallback(
     (missionId: string, phpReward: number, pawsReward: number, title: string) => {
+      celebrate(phpReward, `Mission: ${title}`);
       setState((prev) => {
         if (prev.claimedMissionIds.includes(missionId)) return prev;
         const nextBalance = Number((prev.balancePhp + phpReward).toFixed(2));
@@ -497,6 +526,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
 
   // Trivia Reward Handler
   const handleTriviaReward = useCallback((php: number, paws: number, title: string) => {
+    celebrate(php, title);
     setState((prev) => {
       const todayStr = new Date().toISOString().split('T')[0];
       const nextBalance = Number((prev.balancePhp + php).toFixed(2));
@@ -521,6 +551,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
 
   // Milestone Badge Claim
   const handleClaimAchievement = useCallback((id: string, php: number, paws: number, title: string) => {
+    celebrate(php, `Milestone: ${title}`);
     setState((prev) => {
       if (prev.unlockedAchievementIds.includes(id)) return prev;
       const nextBalance = Number((prev.balancePhp + php).toFixed(2));
@@ -546,6 +577,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
 
   // Social Challenge Reward Claim
   const handleSocialChallengeReward = useCallback((paws: number, php: number, title: string) => {
+    celebrate(php, title);
     setState((prev) => {
       const nextBalance = Number((prev.balancePhp + php).toFixed(2));
       const nextTotal = Number((prev.totalEarnedPhp + php).toFixed(2));
@@ -995,6 +1027,15 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
         onClaimReward={handleSocialChallengeReward}
       />
 
+      {celebration && (
+        <RewardCelebration
+          key={celebration.key}
+          php={celebration.php}
+          title={celebration.title}
+          onDone={() => setCelebration(null)}
+        />
+      )}
+
       {/* Toast Notification Banner */}
       {toast && (
         <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-slate-900/95 border border-cyan-400 text-white text-xs font-bold shadow-2xl flex items-center gap-2 animate-in slide-in-from-top-4 duration-200 pointer-events-none">
@@ -1009,6 +1050,39 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
 export default function App() {
   // undefined = still checking, null = logged out
   const [session, setSession] = useState<Session | null | undefined>(undefined);
+
+  // Ads start a moment after the first screen is drawn (keeps startup fast); also on the login page.
+  useEffect(() => {
+    if (!isNativeAds) return;
+    const t = setTimeout(() => {
+      initAds().then(() => showBottomBanner());
+    }, 1500);
+    // Hide the banner while typing so it never covers the keyboard or inputs.
+    let resumeTimer: ReturnType<typeof setTimeout>;
+    const isField = (el: EventTarget | null) =>
+      el instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
+    const onIn = (e: FocusEvent) => {
+      if (isField(e.target)) {
+        clearTimeout(resumeTimer);
+        hideBanner();
+      }
+    };
+    const onOut = (e: FocusEvent) => {
+      if (isField(e.target)) {
+        clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(() => resumeBanner(), 400);
+      }
+    };
+    document.addEventListener('focusin', onIn);
+    document.addEventListener('focusout', onOut);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(resumeTimer);
+      document.removeEventListener('focusin', onIn);
+      document.removeEventListener('focusout', onOut);
+      removeBanner();
+    };
+  }, []);
 
   const refresh = useCallback(async () => {
     const s = await getCurrentSession();

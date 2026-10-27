@@ -27,7 +27,9 @@ if (typeof window !== 'undefined') {
   });
 }
 
-if (isNativeAds) document.documentElement.classList.add('native-app');
+if (isNativeAds) {
+  document.documentElement.classList.add('native-app');
+}
 
 createRoot(document.getElementById('root')!).render(<App />);
 

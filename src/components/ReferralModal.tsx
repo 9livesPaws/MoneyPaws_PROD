@@ -127,7 +127,8 @@ export const ReferralModal: React.FC<ReferralModalProps> = ({
             <span>Share Invite Link</span>
           </button>
 
-          {/* Simulation button */}
+          {/* Developer-only test button (hidden in release builds) */}
+          {import.meta.env.DEV && (
           <button
             onClick={handleSimulate}
             className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-emerald-500/30 text-emerald-300 font-bold text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5"
@@ -135,6 +136,7 @@ export const ReferralModal: React.FC<ReferralModalProps> = ({
             <Gift className="w-4 h-4 text-emerald-400" />
             <span>Simulate Friend Joining (+₱1.00 Bonus)</span>
           </button>
+          )}
         </div>
 
         <p className="text-[10px] text-center text-slate-400">

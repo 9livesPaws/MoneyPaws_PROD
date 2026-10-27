@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, ShieldCheck, ArrowRight, AlertCircle, Clock, Copy, ExternalLink, StickyNote } from 'lucide-react';
+import { X, CheckCircle2, ShieldCheck, ArrowRight, AlertCircle, Clock, Copy, ExternalLink, StickyNote, QrCode, ImagePlus } from 'lucide-react';
 import { sound } from '../../utils/sound';
 import { fireRewardConfetti } from '../../utils/confetti';
 import { formatPhp, formatPaws } from '../../utils/storage';
 import { SUPPORT_EMAIL } from '../../types';
-import { submitCashOutRequest } from '../../utils/supabase';
+import { submitCashOutRequest, uploadPayoutQr } from '../../utils/supabase';
+import { compressImage } from '../../utils/image';
 
 interface CashOutModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ interface PayoutMethod {
   name: string;
   icon: string;
   accountPlaceholder: string;
-  kind: 'mobile' | 'email' | 'note';
+  kind: 'mobile' | 'email' | 'wallet';
 }
 
 // 1 PawCoin = ₱0.001  (₱10 = 10,000 PawCoins)
@@ -35,7 +36,7 @@ const PAYOUT_METHODS: PayoutMethod[] = [
   { id: 'gcash', name: 'GCash', icon: '📱', accountPlaceholder: '09XX XXX XXXX (11 digits)', kind: 'mobile' },
   { id: 'maya', name: 'Maya', icon: '💳', accountPlaceholder: '09XX XXX XXXX (11 digits)', kind: 'mobile' },
   { id: 'paypal', name: 'PayPal', icon: '🌐', accountPlaceholder: 'your-email@example.com', kind: 'email' },
-  { id: 'one', name: 'ONE', icon: '🟣', accountPlaceholder: '', kind: 'note' },
+  { id: 'one', name: 'ONE', icon: '🟣', accountPlaceholder: 'ONE wallet phone number', kind: 'wallet' },
 ];
 
 function validateAccount(method: PayoutMethod, raw: string): string | null {
@@ -46,6 +47,9 @@ function validateAccount(method: PayoutMethod, raw: string): string | null {
     if (!/^(09\d{9}|\+639\d{9}|639\d{9})$/.test(digits)) {
       return `Enter a valid ${method.name} mobile number (e.g. 09171234567)`;
     }
+  }
+  if (method.kind === 'wallet' && !/^\+?\d{7,15}$/.test(v.replace(/[\s-]/g, ''))) {
+    return 'Enter your ONE wallet phone number (digits only, e.g. 09171234567)';
   }
   if (method.kind === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) {
     return 'Enter a valid PayPal email address';
@@ -67,6 +71,9 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
   const [accountNumber, setAccountNumber] = useState('');
   const [requestedAmount, setRequestedAmount] = useState(CASHOUT_TIERS_PHP[0]);
   const [codeCopied, setCodeCopied] = useState(false);
+  const [oneMode, setOneMode] = useState<'phone' | 'qr'>('phone');
+  const [qrBlob, setQrBlob] = useState<Blob | null>(null);
+  const [qrPreview, setQrPreview] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
   const [lastTxId, setLastTxId] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
@@ -79,14 +86,22 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
     e.preventDefault();
     setErrorMsg('');
 
-    if (selectedMethod.kind === 'note') return;
-
-    const accountError = validateAccount(selectedMethod, accountNumber);
-    if (accountError) {
-      setErrorMsg(accountError);
-      sound.playClick();
-      return;
+    const usingQr = selectedMethod.kind === 'wallet' && oneMode === 'qr';
+    if (usingQr) {
+      if (!qrBlob) {
+        setErrorMsg('Please choose your ONE QR code image.');
+        sound.playClick();
+        return;
+      }
+    } else {
+      const accountError = validateAccount(selectedMethod, accountNumber);
+      if (accountError) {
+        setErrorMsg(accountError);
+        sound.playClick();
+        return;
+      }
     }
+    const accountValue = usingQr ? 'QR code (image attached)' : accountNumber.trim();
 
     if (!hasEnough) {
       setErrorMsg(`Not enough PawCoins. You have ${formatPaws(Math.round(balancePhp * PAWS_PER_PHP))}, this tier needs ${formatPaws(requestedAmount * PAWS_PER_PHP)}.`);
@@ -97,9 +112,11 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
     if (submitting) return;
     setSubmitting(true);
     try {
+      const qrPath = usingQr && qrBlob ? await uploadPayoutQr(qrBlob) : undefined;
       const txId = await submitCashOutRequest({
         method: selectedMethod.name,
-        account: accountNumber.trim(),
+        account: accountValue,
+        qrPath,
         amountPhp: requestedAmount,
         pawcoins: requestedAmount * PAWS_PER_PHP,
         userName,
@@ -109,7 +126,7 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
       fireRewardConfetti(0.4);
       setLastTxId(txId);
       setIsSuccess(true);
-      onWithdraw(requestedAmount, selectedMethod.name, accountNumber.trim());
+      onWithdraw(requestedAmount, selectedMethod.name, accountValue);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Could not submit your request.');
     } finally {
@@ -128,7 +145,19 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
     }
   };
 
-  const isNote = selectedMethod.kind === 'note';
+  const isOne = selectedMethod.kind === 'wallet';
+
+  const pickQr = async (file: File | undefined) => {
+    if (!file) return;
+    setErrorMsg('');
+    try {
+      const blob = await compressImage(file);
+      setQrBlob(blob);
+      setQrPreview(URL.createObjectURL(blob));
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'Could not read that image.');
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
@@ -253,7 +282,7 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
                         <div className="truncate">
                           <span className="text-xs font-bold block truncate">{method.name}</span>
                           <span className="text-[9px] text-slate-400 block">
-                            {method.kind === 'note' ? 'See note' : `Min: ${formatPhp(CASHOUT_TIERS_PHP[0])}`}
+                            {`Min: ${formatPhp(CASHOUT_TIERS_PHP[0])}`}
                           </span>
                         </div>
                       </button>
@@ -262,8 +291,7 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
                 </div>
               </div>
 
-              {isNote ? (
-                /* ONE: shown as a note, no payout yet */
+              {isOne && (
                 <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-400/40 space-y-2.5">
                   <div className="flex items-center gap-2 text-amber-300">
                     <StickyNote className="w-4 h-4" />
@@ -287,22 +315,58 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
                     </span>
                   </button>
                 </div>
+              )}
+
+              {isOne && (
+                <div className="grid grid-cols-2 gap-1.5">
+                  {(['phone', 'qr'] as const).map((m) => (
+                    <button
+                      type="button"
+                      key={m}
+                      onClick={() => {
+                        sound.playClick();
+                        setOneMode(m);
+                        setErrorMsg('');
+                      }}
+                      className={`py-2 rounded-xl border text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer ${
+                        oneMode === m
+                          ? 'bg-cyan-500 text-slate-950 border-cyan-400'
+                          : 'bg-slate-950 border-slate-700 text-slate-300'
+                      }`}
+                    >
+                      {m === 'phone' ? '📱 Phone number' : <><QrCode className="w-3.5 h-3.5" /> QR code</>}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {isOne && oneMode === 'qr' ? (
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Your ONE QR code</label>
+                  <label className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl bg-slate-950 border border-dashed border-cyan-500/50 cursor-pointer text-center">
+                    {qrPreview ? (
+                      <img src={qrPreview} alt="Your ONE QR code" className="max-h-40 rounded-lg" />
+                    ) : (
+                      <ImagePlus className="w-7 h-7 text-cyan-400" />
+                    )}
+                    <span className="text-[11px] text-slate-300">{qrPreview ? 'Tap to change image' : 'Tap to choose a screenshot of your ONE QR code'}</span>
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => pickQr(e.target.files?.[0])} />
+                  </label>
+                </div>
               ) : (
-                <>
-                  {/* Account Number Input */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1">
-                      {selectedMethod.name} {selectedMethod.kind === 'email' ? 'Email' : 'Mobile No.'}
-                    </label>
-                    <input
-                      type={selectedMethod.kind === 'email' ? 'email' : 'tel'}
-                      required
-                      value={accountNumber}
-                      onChange={(e) => setAccountNumber(e.target.value)}
-                      placeholder={selectedMethod.accountPlaceholder}
-                      className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                    {selectedMethod.name} {selectedMethod.kind === 'email' ? 'Email' : 'Mobile No.'}
+                  </label>
+                  <input
+                    type={selectedMethod.kind === 'email' ? 'email' : 'tel'}
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    placeholder={selectedMethod.accountPlaceholder}
+                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-cyan-400 font-mono"
+                  />
+                </div>
+              )}
 
                   {/* Tier Selection (PawCoins) */}
                   <div>
@@ -337,8 +401,6 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
                       })}
                     </div>
                   </div>
-                </>
-              )}
 
               {errorMsg && (
                 <div className="p-2.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
@@ -348,17 +410,6 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
               )}
 
               {/* Submit Button */}
-              {isNote ? (
-                <a
-                  href={ONE_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg cursor-pointer"
-                >
-                  <span>Register at uno.global</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-              ) : (
                 <button
                   type="submit"
                   disabled={submitting}
@@ -371,7 +422,6 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
                   <span>{submitting ? 'Submitting…' : `Confirm ${formatPhp(requestedAmount)} Cash Out`}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              )}
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 pt-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />

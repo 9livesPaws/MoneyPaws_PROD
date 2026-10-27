@@ -163,7 +163,8 @@ export const WalkingView: React.FC<WalkingViewProps> = ({
         </div>
       </div>
 
-      {/* Simulator / Walking Action Buttons */}
+      {/* Developer-only step simulator (hidden in release builds; real steps come from the motion sensor) */}
+      {import.meta.env.DEV && (
       <div className="grid grid-cols-2 gap-2">
         <button
           onClick={() => handleSimulateStep(50)}
@@ -181,6 +182,8 @@ export const WalkingView: React.FC<WalkingViewProps> = ({
           <span>Brisk Walk (+200 Steps)</span>
         </button>
       </div>
+
+      )}
 
       {/* Convert Steps to Real Cash */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-cyan-950/30 to-emerald-950/40 border border-emerald-500/40 flex flex-col gap-2 shadow-lg">

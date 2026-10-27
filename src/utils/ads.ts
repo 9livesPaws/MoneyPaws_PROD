@@ -4,6 +4,7 @@ import {
   RewardAdPluginEvents,
   BannerAdSize,
   BannerAdPosition,
+  BannerAdPluginEvents,
   type AdMobRewardItem,
 } from '@capacitor-community/admob';
 
@@ -42,12 +43,27 @@ export async function initAds(): Promise<void> {
   }
 }
 
-export const BANNER_HEIGHT_PX = 50;
+let bannerListening = false;
+// Tells the Android shell how tall the banner is, so the web page sits fully above it.
+function setBannerHeight(h: number) {
+  try {
+    (window as unknown as { MPAds?: { setBanner?: (n: number) => void } }).MPAds?.setBanner?.(Math.max(0, h || 0));
+  } catch {
+    /* not running in the Android shell */
+  }
+}
+async function listenBanner() {
+  if (bannerListening) return;
+  bannerListening = true;
+  await AdMob.addListener(BannerAdPluginEvents.SizeChanged, (info) => setBannerHeight(info.height));
+  await AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => setBannerHeight(0));
+}
 
 export async function showBottomBanner(): Promise<void> {
   if (!isNativeAds || !BANNER_UNIT_ID) return;
   try {
     await initAds();
+    await listenBanner();
     await AdMob.showBanner({
       adId: BANNER_UNIT_ID,
       adSize: BannerAdSize.BANNER, // fixed 320x50, so the layout never jumps
@@ -71,6 +87,7 @@ export async function resumeBanner(): Promise<void> {
 export async function removeBanner(): Promise<void> {
   if (!isNativeAds) return;
   try { await AdMob.removeBanner(); } catch { /* not created */ }
+  setBannerHeight(0);
 }
 
 export type RewardedResult = 'rewarded' | 'dismissed' | 'error';

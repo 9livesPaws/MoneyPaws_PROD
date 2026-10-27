@@ -12,6 +12,8 @@ On web, "Watch & Earn" shows a labelled preview ad. AdMob only works in the nati
 ## Build the APK on GitHub
 1. Supabase setup (once):
    - SQL Editor: run `supabase/schema.sql`, then `supabase/auth_setup.sql` (profiles + server-side 18+ check).
+   - SQL Editor: also run `supabase/one_wallet.sql` (ONE wallet + QR uploads).
+   - SQL Editor: also run `supabase/progress.sql` (saves each user's progress so you can see it).
    - Authentication > Sign In / Providers: turn **Allow anonymous sign-ins OFF**.
    - Authentication > Sign In / Providers > Email: turn **Confirm email OFF** for now
      (confirmation links need a web page to land on; add one before Play Store).
@@ -31,3 +33,7 @@ The APK is debug-signed, fine for sideloading. Google Play needs a release-signe
 ## Payouts
 Requests land in the `cashout_requests` table (status PENDING). Open Supabase > Table Editor, send the money yourself
 via GCash/Maya/PayPal, then set status to PAID. Users cannot edit requests.
+
+## Checking users and paying
+Supabase > Table Editor > `user_progress` shows each user's balance and activity.
+Supabase > SQL Editor: paste queries from `supabase/admin_queries.sql` (user list, pending cash-outs with progress, mark as paid).

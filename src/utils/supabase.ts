@@ -1,4 +1,5 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
+import type { UserState } from '../types';
 
 // Clean up values pasted into GitHub secrets: quotes, spaces, line breaks, trailing /rest/v1/
 function cleanUrl(v: string | undefined): string | undefined {
@@ -144,6 +145,18 @@ export interface CashOutRequestInput {
   pawcoins: number;
   userName: string;
   userEmail: string;
+  qrPath?: string;
+}
+
+/** Uploads the user's payout QR code image. Returns its storage path. */
+export async function uploadPayoutQr(blob: Blob): Promise<string> {
+  const sb = need();
+  const session = await getCurrentSession();
+  if (!session) throw new Error('Please log in again to cash out.');
+  const path = `${session.user.id}/${Date.now()}.jpg`;
+  const { error } = await sb.storage.from('payout-qr').upload(path, blob, { contentType: 'image/jpeg' });
+  if (error) throw new Error('Could not upload your QR code. Please try again.');
+  return path;
 }
 
 /** Saves a cash-out request. Returns a short reference id. Throws on failure. */
@@ -160,9 +173,44 @@ export async function submitCashOutRequest(input: CashOutRequestInput): Promise<
       pawcoins: input.pawcoins,
       user_name: input.userName,
       user_email: input.userEmail,
+      qr_path: input.qrPath ?? null,
     })
     .select('id')
     .single();
   if (error || !data) throw new Error('Could not submit your request. Please try again.');
   return `MP-${String(data.id).slice(0, 8).toUpperCase()}`;
+}
+
+/** Saves the user's progress so you can see it in Supabase and restore it after a reinstall. */
+export async function pushProgress(userId: string, username: string, email: string, s: UserState): Promise<void> {
+  const sb = getSupabase();
+  if (!sb) return;
+  const { error } = await sb.from('user_progress').upsert(
+    {
+      user_id: userId,
+      username,
+      email,
+      balance_php: Math.max(0, s.balancePhp),
+      total_earned_php: Math.max(0, s.totalEarnedPhp),
+      ads_watched_today: s.adsWatchedToday,
+      steps_today: s.stepsToday,
+      games_played_today: s.gamesPlayedToday,
+      tap_mine_count: s.tapMineCount,
+      consecutive_days: s.consecutiveDays,
+      referral_count: s.referralCount,
+      state: { ...s, transactions: s.transactions.slice(0, 50), tickets: s.tickets.slice(0, 20) },
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id' },
+  );
+  if (error) throw new Error(error.message);
+}
+
+/** Returns the saved progress for this user, or null if none. */
+export async function pullProgress(userId: string): Promise<UserState | null> {
+  const sb = getSupabase();
+  if (!sb) return null;
+  const { data, error } = await sb.from('user_progress').select('state').eq('user_id', userId).maybeSingle();
+  if (error || !data?.state || typeof data.state !== 'object' || !('balancePhp' in data.state)) return null;
+  return data.state as UserState;
 }
