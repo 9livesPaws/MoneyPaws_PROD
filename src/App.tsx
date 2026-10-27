@@ -1001,8 +1001,20 @@ export default function App() {
   }, [refresh]);
 
   if (!supabaseConfigured) {
-    // Local development without Supabase keys: skip login.
-    return <MainApp />;
+    // Local development only: skip login when no Supabase keys are set.
+    if (import.meta.env.DEV) return <MainApp />;
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6 text-center">
+        <div className="max-w-xs space-y-2">
+          <div className="text-5xl">🐾</div>
+          <h1 className="font-fredoka text-xl font-bold">App not configured</h1>
+          <p className="text-xs text-slate-400">
+            This build is missing its Supabase keys. Add the VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+            secrets in GitHub and build again.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (session === undefined) {

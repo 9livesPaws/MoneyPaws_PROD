@@ -270,11 +270,11 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
                     <span className="text-xs font-extrabold uppercase tracking-wider">Note: ONE</span>
                   </div>
                   <p className="text-xs text-slate-200 leading-relaxed">
-                    No ONE account yet? Register at{' '}
+                    Don&apos;t have a ONE account yet? Sign up and register at{' '}
                     <a href={ONE_URL} target="_blank" rel="noopener noreferrer" className="text-cyan-300 font-semibold underline inline-flex items-center gap-0.5">
                       uno.global <ExternalLink className="w-3 h-3" />
                     </a>{' '}
-                    and use referral code:
+                    using my referral code:
                   </p>
                   <button
                     type="button"
@@ -286,7 +286,6 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
                       <Copy className="w-3.5 h-3.5" /> {codeCopied ? 'Copied!' : 'Copy'}
                     </span>
                   </button>
-                  <p className="text-[11px] text-slate-400">ONE cash out is not available yet. Choose GCash, Maya or PayPal to withdraw now.</p>
                 </div>
               ) : (
                 <>
@@ -349,20 +348,30 @@ export const CashOutModal: React.FC<CashOutModalProps> = ({
               )}
 
               {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isNote || submitting}
-                className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-lg ${
-                  isNote
-                    ? 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
-                    : hasEnough
-                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-extrabold shadow-cyan-500/30 active:scale-98 cursor-pointer'
-                    : 'bg-slate-800 text-slate-400 border border-slate-700 cursor-pointer'
-                }`}
-              >
-                <span>{isNote ? 'ONE not available yet' : submitting ? 'Submitting…' : `Confirm ${formatPhp(requestedAmount)} Cash Out`}</span>
-                {!isNote && <ArrowRight className="w-4 h-4" />}
-              </button>
+              {isNote ? (
+                <a
+                  href={ONE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg cursor-pointer"
+                >
+                  <span>Register at uno.global</span>
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              ) : (
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-lg cursor-pointer ${
+                    hasEnough
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-extrabold shadow-cyan-500/30 active:scale-98'
+                      : 'bg-slate-800 text-slate-400 border border-slate-700'
+                  }`}
+                >
+                  <span>{submitting ? 'Submitting…' : `Confirm ${formatPhp(requestedAmount)} Cash Out`}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 pt-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
