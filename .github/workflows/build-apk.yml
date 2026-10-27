@@ -1,0 +1,59 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      production_ads:
+        description: 'Use real AdMob ads (true) or Google test ads (false)'
+        default: 'false'
+        type: choice
+        options: ['false', 'true']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web app
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_ADMOB_PRODUCTION: ${{ inputs.production_ads }}
+          VITE_ADMOB_REWARDED_ID: ${{ secrets.ADMOB_REWARDED_ID }}
+          VITE_ADMOB_BANNER_ID: ${{ secrets.ADMOB_BANNER_ID }}
+        run: npm run build
+
+      - name: Create Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Set AdMob App ID in manifest
+        env:
+          APP_ID: ${{ inputs.production_ads == 'true' && secrets.ADMOB_APP_ID || 'ca-app-pub-3940256099942544~3347511713' }}
+        run: |
+          test -n "$APP_ID" || { echo "ADMOB_APP_ID secret is missing"; exit 1; }
+          sed -i "s#</application>#<meta-data android:name=\"com.google.android.gms.ads.APPLICATION_ID\" android:value=\"$APP_ID\"/></application>#" android/app/src/main/AndroidManifest.xml
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: moneypaws-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
