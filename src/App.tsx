@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthScreen } from './components/AuthScreen';
+import { initAds, showBottomBanner, hideBanner, resumeBanner, removeBanner, isNativeAds } from './utils/ads';
 import { getSupabase, getCurrentSession, isAuthBusy, signOut, supabaseConfigured } from './utils/supabase';
 import { loadUserState, saveUserState, formatPhp } from './utils/storage';
 import { UserState, Transaction, SupportTicket, SUPPORT_EMAIL } from './types';
@@ -65,6 +66,39 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     | 'achievements'
     | 'socialChallenge'
   >(null);
+
+  // Ads start only after login, a moment after the first screen is drawn (keeps startup fast).
+  useEffect(() => {
+    if (!isNativeAds) return;
+    const t = setTimeout(() => {
+      initAds().then(() => showBottomBanner());
+    }, 1500);
+    // Hide the banner while typing so it never covers the keyboard or inputs.
+    let resumeTimer: ReturnType<typeof setTimeout>;
+    const isField = (el: EventTarget | null) =>
+      el instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
+    const onIn = (e: FocusEvent) => {
+      if (isField(e.target)) {
+        clearTimeout(resumeTimer);
+        hideBanner();
+      }
+    };
+    const onOut = (e: FocusEvent) => {
+      if (isField(e.target)) {
+        clearTimeout(resumeTimer);
+        resumeTimer = setTimeout(() => resumeBanner(), 400);
+      }
+    };
+    document.addEventListener('focusin', onIn);
+    document.addEventListener('focusout', onOut);
+    return () => {
+      clearTimeout(t);
+      clearTimeout(resumeTimer);
+      document.removeEventListener('focusin', onIn);
+      document.removeEventListener('focusout', onOut);
+      removeBanner();
+    };
+  }, []);
 
   // Synchronize sound & haptics enabled state
   useEffect(() => {

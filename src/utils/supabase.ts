@@ -1,7 +1,21 @@
 import { createClient, type Session, type SupabaseClient } from '@supabase/supabase-js';
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+// Clean up values pasted into GitHub secrets: quotes, spaces, line breaks, trailing /rest/v1/
+function cleanUrl(v: string | undefined): string | undefined {
+  if (!v) return undefined;
+  let u = v.replace(/["'\s]/g, '');
+  u = u.replace(/\/(rest|auth)\/v1\/?$/i, '').replace(/\/+$/, '');
+  return u || undefined;
+}
+function cleanKey(v: string | undefined): string | undefined {
+  const k = v?.replace(/["'\s]/g, '');
+  return k || undefined;
+}
+
+const url = cleanUrl(import.meta.env.VITE_SUPABASE_URL as string | undefined);
+const anonKey = cleanKey(import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined);
+
+export const supabaseHost = url ? url.replace(/^https?:\/\//i, '') : '';
 
 export const supabaseConfigured = Boolean(url && anonKey);
 
@@ -42,7 +56,9 @@ function friendly(message: string | undefined): string {
   if (m.includes('rate limit') || m.includes('too many')) return 'Too many attempts. Please wait a few minutes and try again.';
   if (m.includes('token') && (m.includes('expired') || m.includes('invalid'))) return 'That code is wrong or expired. Request a new one.';
   if (m.includes('password') && m.includes('characters')) return 'Password must be at least 8 characters.';
-  if (m.includes('fetch') || m.includes('network')) return 'No internet connection. Please try again.';
+  if (m.includes('fetch') || m.includes('network') || m.includes('timed out')) {
+    return `Cannot reach the server (${supabaseHost || 'not set'}). Check your internet connection and try again.`;
+  }
   return message || 'Something went wrong. Please try again.';
 }
 
@@ -92,11 +108,33 @@ export async function resetPasswordWithCode(email: string, code: string, newPass
   }
 }
 
+/** Never waits longer than 3s, so the login screen always appears quickly. */
 export async function getCurrentSession(): Promise<Session | null> {
   const sb = getSupabase();
   if (!sb) return null;
-  const { data } = await sb.auth.getSession();
-  return data.session;
+  try {
+    const result = await Promise.race([
+      sb.auth.getSession().then((r) => r.data.session),
+      new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+    ]);
+    return result;
+  } catch {
+    return null;
+  }
+}
+
+/** Quick check that the phone can reach your Supabase project. */
+export async function checkServer(): Promise<boolean> {
+  if (!url || !anonKey) return false;
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
+    const res = await fetch(`${url}/auth/v1/health`, { headers: { apikey: anonKey }, signal: ctrl.signal });
+    clearTimeout(t);
+    return res.status < 500;
+  } catch {
+    return false;
+  }
 }
 
 export interface CashOutRequestInput {

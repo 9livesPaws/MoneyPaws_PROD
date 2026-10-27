@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, CalendarDays, KeyRound, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 import {
   signIn,
@@ -6,6 +6,8 @@ import {
   sendResetCode,
   resetPasswordWithCode,
   isAtLeast18,
+  checkServer,
+  supabaseHost,
   maxBirthdateIso,
   MIN_AGE,
 } from '../utils/supabase';
@@ -37,6 +39,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
+  const [serverOk, setServerOk] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    checkServer().then((ok) => alive && setServerOk(ok));
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const go = (m: Mode) => {
     setMode(m);
@@ -102,15 +113,27 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
   const pwLabel = mode === 'reset' ? 'New password' : 'Password';
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-6">
-          <div className="text-5xl mb-2">🐾</div>
-          <h1 className="font-fredoka text-3xl font-bold text-white">MoneyPaws</h1>
-          <p className="text-xs text-slate-400 mt-1">Daily passive income & rewards</p>
+    <div className="min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col p-4">
+      <div className="w-full max-w-sm m-auto">
+        <div className="text-center mb-3">
+          <div className="text-4xl">🐾</div>
+          <h1 className="font-fredoka text-2xl font-bold text-white">MoneyPaws</h1>
         </div>
 
-        <form onSubmit={submit} className="bg-slate-900/70 border border-cyan-500/30 rounded-2xl p-4 space-y-3">
+        <form
+          onSubmit={submit}
+          onFocus={(e) => {
+            const el = e.target as HTMLElement;
+            // wait for the keyboard, then bring the tapped field into view
+            setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
+          }}
+          className="bg-slate-900/70 border border-cyan-500/30 rounded-2xl p-4 space-y-3"
+        >
+          {serverOk === false && (
+            <div className="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-[11px]">
+              Cannot reach the server ({supabaseHost || 'not set'}). Check your internet connection. If you are online, the app&apos;s server address may be wrong.
+            </div>
+          )}
           <div className="flex items-center gap-2">
             {(mode === 'forgot' || mode === 'reset') && (
               <button type="button" onClick={() => go('login')} className="p-1 text-slate-400 hover:text-white cursor-pointer" aria-label="Back">
@@ -146,22 +169,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
             />
           </Field>
 
-          {mode === 'signup' && (
-            <div>
-              <Field icon={<CalendarDays className="w-4 h-4" />}>
-                <input
-                  className={inputCls}
-                  type="date"
-                  max={maxBirthdateIso()}
-                  value={birthdate}
-                  onChange={(e) => setBirthdate(e.target.value)}
-                  aria-label="Date of birth"
-                />
-              </Field>
-              <p className="text-[10px] text-slate-500 mt-1 pl-1">Date of birth. You must be {MIN_AGE}+ to register.</p>
-            </div>
-          )}
-
           {mode === 'reset' && (
             <Field icon={<KeyRound className="w-4 h-4" />}>
               <input
@@ -194,6 +201,22 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
                 {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </Field>
+          )}
+
+          {mode === 'signup' && (
+            <div>
+              <Field icon={<CalendarDays className="w-4 h-4" />}>
+                <input
+                  className={inputCls}
+                  type="date"
+                  max={maxBirthdateIso()}
+                  value={birthdate}
+                  onChange={(e) => setBirthdate(e.target.value)}
+                  aria-label="Date of birth"
+                />
+              </Field>
+              <p className="text-[10px] text-slate-500 mt-1 pl-1">Date of birth. You must be {MIN_AGE}+ to register.</p>
+            </div>
           )}
 
           {mode === 'login' && (

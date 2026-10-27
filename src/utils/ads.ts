@@ -42,20 +42,35 @@ export async function initAds(): Promise<void> {
   }
 }
 
-export async function showBottomBanner(bottomMarginPx = 64): Promise<void> {
+export const BANNER_HEIGHT_PX = 50;
+
+export async function showBottomBanner(): Promise<void> {
   if (!isNativeAds || !BANNER_UNIT_ID) return;
   try {
     await initAds();
     await AdMob.showBanner({
       adId: BANNER_UNIT_ID,
-      adSize: BannerAdSize.ADAPTIVE_BANNER,
+      adSize: BannerAdSize.BANNER, // fixed 320x50, so the layout never jumps
       position: BannerAdPosition.BOTTOM_CENTER,
-      margin: bottomMarginPx,
+      margin: 0,
       isTesting: !IS_PRODUCTION,
     });
   } catch (err) {
     console.warn('Banner failed:', err);
   }
+}
+
+export async function hideBanner(): Promise<void> {
+  if (!isNativeAds) return;
+  try { await AdMob.hideBanner(); } catch { /* not shown */ }
+}
+export async function resumeBanner(): Promise<void> {
+  if (!isNativeAds) return;
+  try { await AdMob.resumeBanner(); } catch { /* not created */ }
+}
+export async function removeBanner(): Promise<void> {
+  if (!isNativeAds) return;
+  try { await AdMob.removeBanner(); } catch { /* not created */ }
 }
 
 export type RewardedResult = 'rewarded' | 'dismissed' | 'error';
