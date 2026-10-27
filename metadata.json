@@ -1,0 +1,6 @@
+{
+  "name": "MoneyPaws - Daily Passive Income & Rewards",
+  "description": "Earn daily passive income to cover small daily expenses through walking pedometer, paw mining, watch & earn, fruit mini-game, spin wheel, scratch cards, and referral bonuses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
