@@ -1,5 +1,6 @@
 {
   "appId": "com.moneypaws.app",
   "appName": "MoneyPaws",
-  "webDir": "dist"
+  "webDir": "dist",
+  "backgroundColor": "#020617"
 }

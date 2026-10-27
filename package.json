@@ -8,11 +8,14 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "capacitor:sync:after": "bash scripts/android-patch.sh"
   },
   "dependencies": {
     "@capacitor-community/admob": "^7.0.0",
     "@capacitor/core": "^7.0.0",
+    "@fontsource-variable/fredoka": "^5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
     "@google/genai": "^2.4.0",
     "@supabase/supabase-js": "^2.118.0",
     "@tailwindcss/vite": "^4.3.3",

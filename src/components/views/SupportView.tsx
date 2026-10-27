@@ -88,10 +88,10 @@ export const SupportView: React.FC<SupportViewProps> = ({ tickets, onAddTicket, 
             <div className="mt-2.5">
               <a
                 href={`mailto:${SUPPORT_EMAIL}?subject=MoneyPaws%20App%20Inquiry`}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/25 hover:bg-cyan-400 transition-colors cursor-pointer"
+                className="inline-flex max-w-full items-center gap-2 px-3 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-[11px] shadow-md shadow-cyan-500/25 hover:bg-cyan-400 transition-colors cursor-pointer"
               >
-                <Mail className="w-3.5 h-3.5" />
-                <span className="font-mono">{SUPPORT_EMAIL}</span>
+                <Mail className="w-3.5 h-3.5 shrink-0" />
+                <span className="font-mono min-w-0 break-all">{SUPPORT_EMAIL}</span>
               </a>
             </div>
           </div>

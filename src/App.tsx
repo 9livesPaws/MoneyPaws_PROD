@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import type { Session } from '@supabase/supabase-js';
+import { AuthScreen } from './components/AuthScreen';
+import { getSupabase, getCurrentSession, isAuthBusy, signOut, supabaseConfigured } from './utils/supabase';
 import { loadUserState, saveUserState, formatPhp } from './utils/storage';
 import { UserState, Transaction, SupportTicket, SUPPORT_EMAIL } from './types';
 import { sound } from './utils/sound';
@@ -11,12 +14,12 @@ import { haptics } from './utils/haptics';
 import { fireRewardConfetti } from './utils/confetti';
 import { MainDashboard } from './components/MainDashboard';
 import { CashOutModal } from './components/views/CashOutModal';
-import { DailyCheckinModal } from './components/DailyCheckinModal';
+const DailyCheckinModal = lazy(() => import('./components/DailyCheckinModal').then((m) => ({ default: m.DailyCheckinModal })));
 import { WatchAndEarnModal } from './components/views/WatchAndEarnModal';
 import { WalkingView } from './components/views/WalkingView';
 import { GamesView } from './components/views/GamesView';
 import { MenuDrawer } from './components/MenuDrawer';
-import { ProfileModal } from './components/ProfileModal';
+const ProfileModal = lazy(() => import('./components/ProfileModal').then((m) => ({ default: m.ProfileModal })));
 import { ReferralModal } from './components/ReferralModal';
 import { SupportView } from './components/views/SupportView';
 import { ChestReward } from './components/DailyLuckyChest';
@@ -25,8 +28,22 @@ import { AchievementsView } from './components/AchievementsView';
 import { WeeklySocialChallengeModal } from './components/WeeklySocialChallengeModal';
 import { Smartphone, Monitor, X, Sparkles, Home, Pickaxe, Gamepad2, Footprints as FootprintsIcon, User as UserIcon } from 'lucide-react';
 
-export default function App() {
-  const [state, setState] = useState<UserState>(() => loadUserState());
+interface MainAppProps {
+  userId?: string;
+  username?: string;
+  email?: string;
+  onSignOut?: () => void;
+}
+
+function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
+  const [state, setState] = useState<UserState>(() => {
+    const saved = loadUserState(userId);
+    return {
+      ...saved,
+      userName: username || saved.userName,
+      userEmail: email || saved.userEmail,
+    };
+  });
   const [isPhoneFrame, setIsPhoneFrame] = useState(true);
   const [toast, setToast] = useState<{ message: string; icon?: string } | null>(null);
 
@@ -57,8 +74,8 @@ export default function App() {
 
   // Persist state to localStorage on changes
   useEffect(() => {
-    saveUserState(state);
-  }, [state]);
+    saveUserState(state, userId);
+  }, [state, userId]);
 
   // Passive micro-mining tick (earns ₱0.01 every 45s while app is open)
   useEffect(() => {
@@ -519,7 +536,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-0 md:p-4 selection:bg-cyan-500 selection:text-slate-950 font-sans">
       {/* Top Floating View Switcher (Desktop only) */}
-      <div className="hidden md:flex fixed top-3 right-4 z-40 items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-cyan-500/30 text-xs text-slate-300 shadow-xl">
+      <div className="hidden md:flex fixed top-3 right-4 z-40 items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-full border border-cyan-500/30 text-xs text-slate-300 shadow-xl">
         <span className="text-[11px] text-slate-400">Preview:</span>
         <button
           onClick={() => setIsPhoneFrame(true)}
@@ -560,7 +577,7 @@ export default function App() {
         )}
 
         {/* Primary Screen Content: Exactly replicating the uploaded mockup */}
-        <div className="flex-1 w-full overflow-y-auto pb-6">
+        <div className="flex-1 w-full overflow-y-auto pb-6 native-pad">
           <MainDashboard
             balancePhp={state.balancePhp}
             targetThresholdPhp={state.targetThresholdPhp}
@@ -677,6 +694,7 @@ export default function App() {
       />
 
       {/* Daily Check-in Streak Modal */}
+      <Suspense fallback={null}>
       <DailyCheckinModal
         isOpen={activeModal === 'dailyLogins'}
         onClose={() => setActiveModal(null)}
@@ -684,6 +702,7 @@ export default function App() {
         lastCheckinDate={state.lastCheckinDate}
         onClaimDaily={handleClaimDailyStreak}
       />
+      </Suspense>
 
       {/* Watch Rewarded Ad Modal */}
       <WatchAndEarnModal
@@ -695,7 +714,7 @@ export default function App() {
 
       {/* Walking Steps Modal / View */}
       {activeModal === 'walking' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm bg-slate-950 border border-cyan-500/40 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => {
@@ -720,7 +739,7 @@ export default function App() {
 
       {/* Spin the Wheel Modal / View */}
       {activeModal === 'spinWheel' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm bg-slate-950 border border-cyan-500/40 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => {
@@ -755,7 +774,7 @@ export default function App() {
 
       {/* Scratch & Win Paws Modal / View */}
       {activeModal === 'scratch' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm bg-slate-950 border border-cyan-500/40 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => {
@@ -790,7 +809,7 @@ export default function App() {
 
       {/* Fruit Tap Modal / View */}
       {activeModal === 'fruitTap' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm bg-slate-950 border border-cyan-500/40 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => {
@@ -855,17 +874,20 @@ export default function App() {
       />
 
       {/* User Profile Modal */}
+      <Suspense fallback={null}>
       <ProfileModal
         isOpen={activeModal === 'profile'}
         onClose={() => setActiveModal(null)}
         userName={state.userName}
         userEmail={state.userEmail}
+        onSignOut={onSignOut}
         balancePhp={state.balancePhp}
         totalEarnedPhp={state.totalEarnedPhp}
         consecutiveDays={state.consecutiveDays}
         referralCode={state.referralCode}
         onOpenSupport={() => setActiveModal('support')}
       />
+      </Suspense>
 
       {/* Referral Program Modal */}
       <ReferralModal
@@ -892,7 +914,7 @@ export default function App() {
 
       {/* Support Center & FAQ Modal */}
       {activeModal === 'support' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm bg-slate-950 border border-cyan-500/40 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => {
@@ -914,7 +936,7 @@ export default function App() {
 
       {/* Milestone Badges & Achievements Modal */}
       {activeModal === 'achievements' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm bg-slate-950 border border-amber-500/40 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto">
             <AchievementsView
               unlockedAchievementIds={state.unlockedAchievementIds}
@@ -947,5 +969,63 @@ export default function App() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function App() {
+  // undefined = still checking, null = logged out
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+
+  const refresh = useCallback(async () => {
+    const s = await getCurrentSession();
+    setSession(s);
+  }, []);
+
+  useEffect(() => {
+    const sb = getSupabase();
+    if (!sb) {
+      setSession(null);
+      return;
+    }
+    refresh();
+    const { data } = sb.auth.onAuthStateChange((_event, s) => {
+      if (isAuthBusy()) return; // password reset in progress
+      if (s?.user?.is_anonymous) {
+        signOut(); // old test sessions are not allowed anymore
+        setSession(null);
+        return;
+      }
+      setSession(s);
+    });
+    return () => data.subscription.unsubscribe();
+  }, [refresh]);
+
+  if (!supabaseConfigured) {
+    // Local development without Supabase keys: skip login.
+    return <MainApp />;
+  }
+
+  if (session === undefined) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-5xl">🐾</div>
+    );
+  }
+
+  if (!session) {
+    return <AuthScreen onAuthed={refresh} />;
+  }
+
+  const meta = (session.user.user_metadata || {}) as { username?: string };
+  return (
+    <MainApp
+      key={session.user.id}
+      userId={session.user.id}
+      username={meta.username}
+      email={session.user.email}
+      onSignOut={async () => {
+        await signOut();
+        setSession(null);
+      }}
+    />
   );
 }

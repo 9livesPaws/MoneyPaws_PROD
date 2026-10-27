@@ -25,7 +25,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateToWallet,
 }) => {
   return (
-    <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-2.5 shadow-lg shadow-black/20">
+    <header className="sticky top-0 z-30 bg-slate-900/90 border-b border-slate-800/80 px-4 py-2.5 shadow-lg shadow-black/20">
       <div className="max-w-md mx-auto flex items-center justify-between gap-2">
         {/* Brand */}
         <div className="flex items-center gap-2">

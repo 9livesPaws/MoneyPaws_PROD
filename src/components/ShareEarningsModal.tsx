@@ -277,7 +277,7 @@ export const ShareEarningsModal: React.FC<ShareEarningsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
       <div className="relative w-full max-w-sm bg-slate-950 border border-cyan-500/40 rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-white max-h-[92vh] overflow-y-auto">
         {/* Close Button */}
         <button

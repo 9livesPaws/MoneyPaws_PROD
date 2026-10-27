@@ -83,7 +83,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
           sound.playClick();
           onClose();
         }}
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/80"
       />
 
       {/* Drawer panel */}

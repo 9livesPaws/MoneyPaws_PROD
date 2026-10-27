@@ -10,8 +10,14 @@ Tiers: ₱10 = 10,000 PawCoins ... ₱1,000 = 1,000,000 PawCoins (1 PawCoin = �
 On web, "Watch & Earn" shows a labelled preview ad. AdMob only works in the native Android app.
 
 ## Build the APK on GitHub
-1. Supabase: run `supabase/schema.sql` in the SQL Editor and turn on
-   Authentication > Sign In / Providers > "Allow anonymous sign-ins".
+1. Supabase setup (once):
+   - SQL Editor: run `supabase/schema.sql`, then `supabase/auth_setup.sql` (profiles + server-side 18+ check).
+   - Authentication > Sign In / Providers: turn **Allow anonymous sign-ins OFF**.
+   - Authentication > Sign In / Providers > Email: turn **Confirm email OFF** for now
+     (confirmation links need a web page to land on; add one before Play Store).
+   - Authentication > Emails > Templates > **Reset password**: replace the body with
+     `<h2>Reset your MoneyPaws password</h2><p>Your code: <b>{{ .Token }}</b></p>`
+     so users can type the code in the app (no web link needed).
 2. GitHub repo > Settings > Secrets and variables > Actions > New repository secret:
    - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Supabase > Project Settings > API; use the anon/public key, never service_role)
    - For real ads only: `ADMOB_APP_ID`, `ADMOB_REWARDED_ID`, `ADMOB_BANNER_ID`

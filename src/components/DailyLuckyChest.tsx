@@ -227,7 +227,7 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
 
       {/* FULL UNBOXING MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
           <div className="relative w-full max-w-sm bg-gradient-to-b from-slate-900 via-slate-950 to-slate-900 border border-amber-500/40 rounded-3xl p-5 shadow-2xl flex flex-col items-center text-center overflow-hidden">
             {/* Close button */}
             <button

@@ -57,10 +57,12 @@ export const DEFAULT_USER_STATE: UserState = {
   userEmail: 'user@moneypaws.com',
 };
 
-export function loadUserState(): UserState {
+const keyFor = (userId?: string) => (userId ? `${STORAGE_KEY}_${userId}` : STORAGE_KEY);
+
+export function loadUserState(userId?: string): UserState {
   if (typeof window === 'undefined') return DEFAULT_USER_STATE;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(keyFor(userId));
     if (!raw) return DEFAULT_USER_STATE;
     const parsed = JSON.parse(raw);
     return {
@@ -74,10 +76,10 @@ export function loadUserState(): UserState {
   }
 }
 
-export function saveUserState(state: UserState): void {
+export function saveUserState(state: UserState, userId?: string): void {
   if (typeof window === 'undefined') return;
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(keyFor(userId), JSON.stringify(state));
   } catch (err) {
     console.warn('Failed to save user state:', err);
   }

@@ -125,7 +125,7 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
       <div className="relative w-full max-w-sm bg-slate-900 border border-slate-700/80 rounded-2xl overflow-hidden shadow-2xl">
         {/* Header bar */}
         <div className="bg-slate-950 px-4 py-3 flex items-center justify-between border-b border-slate-800">
@@ -159,14 +159,14 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
             {sponsor.tagline}
           </p>
 
-          <div className="mt-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/30 backdrop-blur-sm border border-white/20 text-[11px] font-semibold">
+          <div className="mt-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/30 border border-white/20 text-[11px] font-semibold">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
             <span>Sample Sponsor (preview)</span>
           </div>
 
           {/* Progress / Play overlay */}
           {!isPlaying && !isCompleted && (
-            <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex flex-col items-center justify-center p-4">
+            <div className="absolute inset-0 bg-slate-950/70 flex flex-col items-center justify-center p-4">
               <button
                 onClick={handleStartWatch}
                 className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-500 to-orange-400 flex items-center justify-center text-slate-950 shadow-xl shadow-amber-500/40 hover:scale-105 active:scale-95 transition-all cursor-pointer"
@@ -181,13 +181,13 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
           )}
 
           {isPlaying && (
-            <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 text-xs font-mono font-bold text-amber-300 flex items-center gap-1">
+            <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1 rounded-full border border-white/20 text-xs font-mono font-bold text-amber-300 flex items-center gap-1">
               <span>⏱ {secondsLeft}s</span>
             </div>
           )}
 
           {isCompleted && (
-            <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-4 animate-in zoom-in-95">
+            <div className="absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center p-4 animate-in zoom-in-95">
               <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-1 animate-pulse" />
               <span className="font-fredoka text-lg font-bold text-white">Video Completed!</span>
               <div className="text-amber-400 font-extrabold text-xl font-mono mt-0.5 flex items-center gap-1">

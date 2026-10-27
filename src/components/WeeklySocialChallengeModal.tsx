@@ -74,7 +74,7 @@ export const WeeklySocialChallengeModal: React.FC<WeeklySocialChallengeModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3.5 bg-black/85 animate-in fade-in duration-200">
       <div className="relative w-full max-w-sm bg-slate-950 border border-sky-500/40 rounded-3xl p-4 shadow-2xl flex flex-col gap-3 max-h-[92vh] overflow-y-auto">
         {/* Close Button */}
         <button

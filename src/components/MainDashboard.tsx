@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Menu, User, Sparkles, Footprints, Tv, Calendar, RefreshCw, Trophy, ArrowRight, ExternalLink, Share2 } from 'lucide-react';
 import { sound } from '../utils/sound';
 import { haptics } from '../utils/haptics';
@@ -12,8 +12,8 @@ import { DailyProgressRing } from './DailyProgressRing';
 import { PersonalGoalsSummary } from './PersonalGoalsSummary';
 import { DailyTriviaQuiz } from './DailyTriviaQuiz';
 import { DailyHabitTracker } from './DailyHabitTracker';
-import { HabitsWeeklyConsistency } from './HabitsWeeklyConsistency';
-import { WeeklyPerformanceChart } from './WeeklyPerformanceChart';
+const HabitsWeeklyConsistency = lazy(() => import('./HabitsWeeklyConsistency').then((m) => ({ default: m.HabitsWeeklyConsistency })));
+const WeeklyPerformanceChart = lazy(() => import('./WeeklyPerformanceChart').then((m) => ({ default: m.WeeklyPerformanceChart })));
 import { PersonalGoal } from '../types';
 
 interface MainDashboardProps {
@@ -534,12 +534,14 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
         {/* Daily Habit Tracker & Weekly Consistency Section */}
         <div id="habits-section" className="pb-1 scroll-mt-4 flex flex-col gap-2.5">
+<Suspense fallback={<div className="h-40" />}>
           <HabitsWeeklyConsistency
             personalGoals={personalGoals}
             onScrollToHabits={() => {
               document.getElementById('habits-section')?.scrollIntoView({ behavior: 'smooth' });
             }}
           />
+</Suspense>
 
           <DailyHabitTracker
             habits={personalGoals}
@@ -560,12 +562,14 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
         {/* 7-Day Cross-Activity Weekly Performance Analytics */}
         <div id="analytics-section" className="pb-1 scroll-mt-4">
+<Suspense fallback={<div className="h-40" />}>
           <WeeklyPerformanceChart
             stepsToday={stepsToday}
             balancePhp={balancePhp}
             habitsCompletedCount={personalGoals.filter((g) => g.completed).length}
             totalHabitsCount={personalGoals.length}
           />
+</Suspense>
         </div>
 
         {/* Live Top 10 Earners Leaderboard */}

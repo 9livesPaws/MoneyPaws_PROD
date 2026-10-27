@@ -15,6 +15,7 @@ interface ProfileModalProps {
   consecutiveDays: number;
   referralCode: string;
   onOpenSupport: () => void;
+  onSignOut?: () => void;
 }
 
 // Generate realistic 7-day and 30-day daily earnings history
@@ -44,6 +45,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   onClose,
   userName,
   userEmail,
+  onSignOut,
   balancePhp,
   totalEarnedPhp,
   consecutiveDays,
@@ -72,7 +74,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const currentDay = 25;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 animate-in fade-in duration-200">
       <div className="relative w-full max-w-sm bg-slate-900 border border-cyan-500/30 rounded-3xl p-5 shadow-2xl flex flex-col gap-3.5 max-h-[92vh] overflow-y-auto">
         {/* Close Button */}
         <button
@@ -349,6 +351,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             Open Help
           </button>
         </div>
+
+        {onSignOut && (
+          <button
+            onClick={() => {
+              sound.playClick();
+              onClose();
+              onSignOut();
+            }}
+            className="w-full py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 text-xs font-bold hover:bg-slate-700 cursor-pointer"
+          >
+            Log out
+          </button>
+        )}
       </div>
     </div>
   );

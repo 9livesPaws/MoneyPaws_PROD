@@ -169,7 +169,7 @@ const FruitGame: React.FC<{
       <div className="relative w-full h-80 bg-gradient-to-b from-slate-900 via-amber-950/20 to-slate-900 rounded-2xl border border-amber-500/30 overflow-hidden select-none touch-none shadow-inner">
         {/* Top bar inside canvas */}
         <div className="absolute top-2 left-3 right-3 z-10 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-800">
+          <div className="flex items-center gap-2 bg-slate-950/80 px-3 py-1.5 rounded-full border border-slate-800">
             <span className="text-amber-400 font-bold">Score:</span>
             <span className="font-mono text-white font-extrabold text-sm">{score}</span>
             {combo > 2 && (
@@ -178,7 +178,7 @@ const FruitGame: React.FC<{
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5 bg-slate-950/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-800">
+          <div className="flex items-center gap-1.5 bg-slate-950/80 px-3 py-1.5 rounded-full border border-slate-800">
             <span className="text-slate-400">⏱</span>
             <span className="font-mono text-amber-300 font-extrabold">{timeLeft}s</span>
           </div>
@@ -203,7 +203,7 @@ const FruitGame: React.FC<{
 
         {/* Start / Game Over Overlay */}
         {!isPlaying && (
-          <div className="absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-5 text-center">
+          <div className="absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center p-5 text-center">
             {timeLeft === 0 ? (
               <div className="flex flex-col items-center animate-in zoom-in-95">
                 <Trophy className="w-12 h-12 text-amber-400 mb-1" />
