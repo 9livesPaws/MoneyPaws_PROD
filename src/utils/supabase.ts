@@ -31,6 +31,14 @@ export function getSupabase(): SupabaseClient | null {
 let authBusy = false;
 export const isAuthBusy = () => authBusy;
 
+export class AuthError extends Error {
+  detail?: string;
+  constructor(message: string, detail?: string) {
+    super(message);
+    this.detail = detail;
+  }
+}
+
 export const MIN_AGE = 18;
 
 export function maxBirthdateIso(): string {
@@ -53,7 +61,7 @@ function friendly(message: string | undefined): string {
   if (m.includes('invalid login')) return 'Wrong email or password.';
   if (m.includes('email not confirmed')) return 'Please confirm your email first, then log in.';
   if (m.includes('already registered') || m.includes('already been registered')) return 'That email is already registered. Try logging in.';
-  if (m.includes('database error saving new user')) return 'Could not create the account. Check that you are 18+ and the username is not already taken.';
+  if (m.includes('database error saving new user')) return 'Could not create the account. The username may already be taken, or the date of birth shows you are under 18.';
   if (m.includes('rate limit') || m.includes('too many')) return 'Too many attempts. Please wait a few minutes and try again.';
   if (m.includes('token') && (m.includes('expired') || m.includes('invalid'))) return 'That code is wrong or expired. Request a new one.';
   if (m.includes('password') && m.includes('characters')) return 'Password must be at least 8 characters.';
@@ -69,20 +77,36 @@ function need(): SupabaseClient {
   return sb;
 }
 
+/** Asks the database (if set up) for the exact reason a sign-up would be refused. Never blocks if unavailable. */
+async function precheckSignup(username: string, birthdate: string): Promise<void> {
+  const sb = getSupabase();
+  if (!sb) return;
+  try {
+    const { data, error } = await sb.rpc('signup_precheck', { p_username: username, p_birthdate: birthdate });
+    if (error || typeof data !== 'string') return; // function not installed: skip
+    if (data === 'AGE') throw new AuthError('You must be at least 18 years old to use MoneyPaws.');
+    if (data === 'USERNAME_TAKEN') throw new AuthError('That username is already taken. Please choose another one.');
+    if (data === 'USERNAME_INVALID') throw new AuthError('Username must be 3-24 characters.');
+  } catch (e) {
+    if (e instanceof AuthError) throw e;
+  }
+}
+
 export async function signUp(input: { username: string; email: string; password: string; birthdate: string }) {
   const sb = need();
+  await precheckSignup(input.username.trim(), input.birthdate);
   const { data, error } = await sb.auth.signUp({
     email: input.email.trim(),
     password: input.password,
     options: { data: { username: input.username.trim(), birthdate: input.birthdate } },
   });
-  if (error) throw new Error(friendly(error.message));
+  if (error) throw new AuthError(friendly(error.message), error.message);
   return { needsEmailConfirm: !data.session };
 }
 
 export async function signIn(email: string, password: string) {
   const { error } = await need().auth.signInWithPassword({ email: email.trim(), password });
-  if (error) throw new Error(friendly(error.message));
+  if (error) throw new AuthError(friendly(error.message), error.message);
 }
 
 export async function signOut() {
@@ -92,7 +116,7 @@ export async function signOut() {
 /** Step 1 of reset: emails a code (see README for the email template change). */
 export async function sendResetCode(email: string) {
   const { error } = await need().auth.resetPasswordForEmail(email.trim());
-  if (error) throw new Error(friendly(error.message));
+  if (error) throw new AuthError(friendly(error.message), error.message);
 }
 
 /** Step 2 of reset: check the emailed code and set the new password. */
@@ -101,9 +125,9 @@ export async function resetPasswordWithCode(email: string, code: string, newPass
   authBusy = true;
   try {
     const { error: vErr } = await sb.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: 'recovery' });
-    if (vErr) throw new Error(friendly(vErr.message));
+    if (vErr) throw new AuthError(friendly(vErr.message), vErr.message);
     const { error: uErr } = await sb.auth.updateUser({ password: newPassword });
-    if (uErr) throw new Error(friendly(uErr.message));
+    if (uErr) throw new AuthError(friendly(uErr.message), uErr.message);
   } finally {
     authBusy = false;
   }

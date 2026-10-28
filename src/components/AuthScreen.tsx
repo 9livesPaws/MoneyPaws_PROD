@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, CalendarDays, KeyRound, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, KeyRound, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react';
 import {
   signIn,
   signUp,
@@ -8,7 +8,7 @@ import {
   isAtLeast18,
   checkServer,
   supabaseHost,
-  maxBirthdateIso,
+  AuthError,
   MIN_AGE,
 } from '../utils/supabase';
 
@@ -20,10 +20,14 @@ interface AuthScreenProps {
 
 const inputCls =
   'w-full pl-9 pr-3 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-cyan-400';
+const selectCls =
+  'w-full px-2 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:outline-none focus:border-cyan-400';
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const Field: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({ icon, children }) => (
   <div className="relative">
-    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">{icon}</span>
+    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">{icon}</span>
     {children}
   </div>
 );
@@ -33,11 +37,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
   const [showPw, setShowPw] = useState(false);
-  const [birthdate, setBirthdate] = useState('');
+  const [dobM, setDobM] = useState('');
+  const [dobD, setDobD] = useState('');
+  const [dobY, setDobY] = useState('');
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [detail, setDetail] = useState('');
   const [info, setInfo] = useState('');
   const [serverOk, setServerOk] = useState<boolean | null>(null);
 
@@ -52,27 +60,32 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
   const go = (m: Mode) => {
     setMode(m);
     setError('');
+    setDetail('');
     setInfo('');
   };
 
-  const run = async (fn: () => Promise<void>) => {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    try {
-      await fn();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Something went wrong.');
-    } finally {
-      setBusy(false);
-    }
+  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  const thisYear = new Date().getFullYear();
+  const years = Array.from({ length: thisYear - MIN_AGE - 1929 }, (_, i) => thisYear - MIN_AGE - i);
+
+  const buildBirthdate = (): string => {
+    if (!dobM || !dobD || !dobY) return '';
+    const m = Number(dobM);
+    const d = Number(dobD);
+    const y = Number(dobY);
+    const date = new Date(y, m - 1, d);
+    if (date.getFullYear() !== y || date.getMonth() !== m - 1 || date.getDate() !== d) return 'invalid';
+    return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   };
 
-  const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
-
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    run(async () => {
+    if (busy) return;
+    setError('');
+    setDetail('');
+    setInfo('');
+    setBusy(true);
+    try {
       if (!validEmail) throw new Error('Enter a valid email address.');
 
       if (mode === 'login') {
@@ -84,12 +97,15 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
         if (name.length < 3 || name.length > 24 || !/^[A-Za-z0-9_.]+$/.test(name)) {
           throw new Error('Username: 3-24 letters, numbers, _ or . only.');
         }
-        if (!birthdate) throw new Error('Enter your date of birth.');
-        if (!isAtLeast18(birthdate)) throw new Error(`You must be at least ${MIN_AGE} years old to use MoneyPaws.`);
         if (password.length < 8) throw new Error('Password must be at least 8 characters.');
+        if (password !== password2) throw new Error('The two passwords do not match.');
+        const birthdate = buildBirthdate();
+        if (!birthdate) throw new Error('Choose your date of birth (month, day and year).');
+        if (birthdate === 'invalid') throw new Error('That date of birth does not exist. Check the day and month.');
+        if (!isAtLeast18(birthdate)) throw new Error(`You must be at least ${MIN_AGE} years old to use MoneyPaws.`);
         const { needsEmailConfirm } = await signUp({ username: name, email, password, birthdate });
         if (needsEmailConfirm) {
-          setInfo('Account created! Confirm your email, then log in.');
+          setInfo('Account created! Open the confirmation email we sent, then log in.');
           setMode('login');
         } else {
           onAuthed();
@@ -104,13 +120,29 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
         await resetPasswordWithCode(email, code, password);
         onAuthed();
       }
-    });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong.');
+      if (err instanceof AuthError && err.detail) setDetail(err.detail);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const title =
     mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create account' : mode === 'forgot' ? 'Reset password' : 'New password';
 
-  const pwLabel = mode === 'reset' ? 'New password' : 'Password';
+  const pwType = showPw ? 'text' : 'password';
+  const ShowBtn = (
+    <button
+      type="button"
+      onClick={() => setShowPw((v) => !v)}
+      className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-bold text-cyan-300 bg-slate-800 cursor-pointer"
+      aria-label={showPw ? 'Hide password' : 'Show password'}
+    >
+      {showPw ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+      {showPw ? 'Hide' : 'Show'}
+    </button>
+  );
 
   return (
     <div className="min-h-[100dvh] bg-slate-950 text-slate-100 flex flex-col p-4">
@@ -124,16 +156,16 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
           onSubmit={submit}
           onFocus={(e) => {
             const el = e.target as HTMLElement;
-            // wait for the keyboard, then bring the tapped field into view
             setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 300);
           }}
           className="bg-slate-900/70 border border-cyan-500/30 rounded-2xl p-4 space-y-3"
         >
           {serverOk === false && (
             <div className="p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-200 text-[11px]">
-              Cannot reach the server ({supabaseHost || 'not set'}). Check your internet connection. If you are online, the app&apos;s server address may be wrong.
+              Cannot reach the server ({supabaseHost || 'not set'}). Check your internet connection.
             </div>
           )}
+
           <div className="flex items-center gap-2">
             {(mode === 'forgot' || mode === 'reset') && (
               <button type="button" onClick={() => go('login')} className="p-1 text-slate-400 hover:text-white cursor-pointer" aria-label="Back">
@@ -185,37 +217,55 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
           {mode !== 'forgot' && (
             <Field icon={<Lock className="w-4 h-4" />}>
               <input
-                className={`${inputCls} pr-10`}
-                type={showPw ? 'text' : 'password'}
-                placeholder={pwLabel}
+                className={`${inputCls} pr-20`}
+                type={pwType}
+                placeholder={mode === 'reset' ? 'New password' : 'Password'}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <button
-                type="button"
-                onClick={() => setShowPw((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer"
-                aria-label={showPw ? 'Hide password' : 'Show password'}
-              >
-                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
+              {ShowBtn}
+            </Field>
+          )}
+
+          {mode === 'signup' && (
+            <Field icon={<Lock className="w-4 h-4" />}>
+              <input
+                className={inputCls}
+                type={pwType}
+                placeholder="Confirm password"
+                autoComplete="new-password"
+                value={password2}
+                onChange={(e) => setPassword2(e.target.value)}
+              />
             </Field>
           )}
 
           {mode === 'signup' && (
             <div>
-              <Field icon={<CalendarDays className="w-4 h-4" />}>
-                <input
-                  className={inputCls}
-                  type="date"
-                  max={maxBirthdateIso()}
-                  value={birthdate}
-                  onChange={(e) => setBirthdate(e.target.value)}
-                  aria-label="Date of birth"
-                />
-              </Field>
-              <p className="text-[10px] text-slate-500 mt-1 pl-1">Date of birth. You must be {MIN_AGE}+ to register.</p>
+              <label className="block text-xs font-bold text-slate-200 mb-1">
+                Date of birth <span className="text-amber-300 font-normal">(you must be {MIN_AGE}+)</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <select className={selectCls} value={dobM} onChange={(e) => setDobM(e.target.value)} aria-label="Birth month">
+                  <option value="">Month</option>
+                  {MONTHS.map((m, i) => (
+                    <option key={m} value={i + 1}>{m}</option>
+                  ))}
+                </select>
+                <select className={selectCls} value={dobD} onChange={(e) => setDobD(e.target.value)} aria-label="Birth day">
+                  <option value="">Day</option>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                <select className={selectCls} value={dobY} onChange={(e) => setDobY(e.target.value)} aria-label="Birth year">
+                  <option value="">Year</option>
+                  {years.map((y) => (
+                    <option key={y} value={y}>{y}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 
@@ -228,7 +278,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
           {error && (
             <div className="p-2.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-start gap-2">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
+              <div>
+                <span>{error}</span>
+                {detail && <div className="mt-1 text-[10px] text-rose-400/70 break-words">Details: {detail}</div>}
+              </div>
             </div>
           )}
           {info && !error && (
@@ -265,6 +318,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthed }) => {
             >
               {mode === 'login' ? 'Create account' : 'Log in'}
             </button>
+          </p>
+        )}
+        {mode === 'signup' && (
+          <p className="text-center text-[10px] text-slate-500 mt-2">
+            By creating an account you confirm you are {MIN_AGE} or older.
           </p>
         )}
       </div>

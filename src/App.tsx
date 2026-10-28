@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 
 import type { Session } from '@supabase/supabase-js';
 import { AuthScreen } from './components/AuthScreen';
 import { RewardCelebration } from './components/RewardCelebration';
+import { scheduleMiningDone, cancelMiningDone, scheduleDailyReminder } from './utils/notify';
 import { MINING_DAILY_CAP_PHP, MINING_DURATION_MS, MINING_REWARD_PHP, todayKey } from './utils/mining';
 import { initAds, showBottomBanner, hideBanner, resumeBanner, removeBanner, isNativeAds } from './utils/ads';
 import { pushProgress, pullProgress } from './utils/supabase';
@@ -69,6 +70,13 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     | 'achievements'
     | 'socialChallenge'
   >(null);
+
+  // Re-arm notifications when the app opens (only if the user already allowed them)
+  useEffect(() => {
+    const ends = stateRef.current.miningEndsAt;
+    if (ends && ends > Date.now()) scheduleMiningDone(ends, false);
+    scheduleDailyReminder();
+  }, []);
 
   // Progress sync: restore after reinstall, then save to Supabase every 30s and when the app is backgrounded.
   const stateRef = useRef(state);
@@ -185,21 +193,22 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
 
   // CAT MINING: one tap starts a 3-hour session; claim the reward when it finishes (daily cap applies)
   const handleStartMining = useCallback(() => {
-    setState((prev) => {
-      const today = todayKey();
-      const sessions = prev.miningDay === today ? prev.miningSessionsToday : 0;
-      const earned = prev.miningDay === today ? prev.miningEarnedTodayPhp : 0;
-      if (prev.miningEndsAt || earned >= MINING_DAILY_CAP_PHP - 0.0001) return prev;
-      const now = Date.now();
-      return {
-        ...prev,
-        miningStartedAt: now,
-        miningEndsAt: now + MINING_DURATION_MS,
-        miningDay: today,
-        miningSessionsToday: sessions,
-        miningEarnedTodayPhp: earned,
-      };
-    });
+    const s0 = stateRef.current;
+    const today = todayKey();
+    const sessions = s0.miningDay === today ? s0.miningSessionsToday : 0;
+    const earned = s0.miningDay === today ? s0.miningEarnedTodayPhp : 0;
+    if (s0.miningEndsAt || earned >= MINING_DAILY_CAP_PHP - 0.0001) return;
+    const now = Date.now();
+    const endsAt = now + MINING_DURATION_MS;
+    setState((prev) => ({
+      ...prev,
+      miningStartedAt: now,
+      miningEndsAt: endsAt,
+      miningDay: today,
+      miningSessionsToday: sessions,
+      miningEarnedTodayPhp: earned,
+    }));
+    scheduleMiningDone(endsAt, true); // asks for notification permission the first time
   }, []);
 
   const handleClaimMining = useCallback(() => {
@@ -208,6 +217,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     const today = todayKey();
     const earned = s0.miningDay === today ? s0.miningEarnedTodayPhp : 0;
     const reward = Number(Math.min(MINING_REWARD_PHP, Math.max(0, MINING_DAILY_CAP_PHP - earned)).toFixed(2));
+    cancelMiningDone();
     setState((prev) => ({
       ...prev,
       miningStartedAt: null,

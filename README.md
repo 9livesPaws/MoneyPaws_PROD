@@ -11,14 +11,12 @@ On web, "Watch & Earn" shows a labelled preview ad. AdMob only works in the nati
 
 ## Build the APK on GitHub
 1. Supabase setup (once):
-   - SQL Editor: run `supabase/schema.sql`, then `supabase/auth_setup.sql` (profiles + server-side 18+ check).
-   - SQL Editor: also run `supabase/one_wallet.sql` (ONE wallet + QR uploads).
-   - SQL Editor: also run `supabase/progress.sql` (saves each user's progress so you can see it).
+   - SQL Editor: paste ALL of `supabase/setup_all.sql` and click Run (safe to run again).
    - Authentication > Sign In / Providers: turn **Allow anonymous sign-ins OFF**.
    - Authentication > Sign In / Providers > Email: turn **Confirm email OFF** for now
      (confirmation links need a web page to land on; add one before Play Store).
-   - Authentication > Emails > Templates > **Reset password**: replace the body with
-     `<h2>Reset your MoneyPaws password</h2><p>Your code: <b>{{ .Token }}</b></p>`
+   - Authentication > Emails > Templates > **Reset password** (needs custom SMTP, e.g. Gmail app password):
+     replace the body with `<h2>Reset your MoneyPaws password</h2><p>Your code: <b>{{ .Token }}</b></p>`
      so users can type the code in the app (no web link needed).
 2. GitHub repo > Settings > Secrets and variables > Actions > New repository secret:
    - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Supabase > Project Settings > API; use the anon/public key, never service_role)

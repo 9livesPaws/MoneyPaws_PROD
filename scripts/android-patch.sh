@@ -108,4 +108,10 @@ public class MainActivity extends BridgeActivity {
 }
 J
 fi
+# App icon (cat miner) instead of the default Capacitor logo
+if [ -d resources/android-res ]; then
+  cp -r resources/android-res/. "$RES/"
+  [ -f "$RES/values/ic_launcher_background.xml" ] && sed -i 's/#FFFFFF/#0F172A/' "$RES/values/ic_launcher_background.xml"
+fi
+
 echo "android-patch: dark launch theme + insets bridge applied"
