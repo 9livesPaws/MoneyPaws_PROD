@@ -81,10 +81,7 @@ public class MainActivity extends BridgeActivity {
         super.onResume();
         // Coming back from a full-screen ad can leave the WebView blank: ask it to redraw.
         if (appWebView != null) {
-            appWebView.postDelayed(() -> {
-                appWebView.requestLayout();
-                appWebView.invalidate();
-            }, 200);
+            appWebView.postDelayed(() -> appWebView.invalidate(), 200);
         }
     }
 

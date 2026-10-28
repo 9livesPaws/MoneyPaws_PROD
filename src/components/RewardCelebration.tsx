@@ -15,11 +15,11 @@ export const RewardCelebration: React.FC<RewardCelebrationProps> = ({ php, title
 
   useEffect(() => {
     sound.playFanfare();
-    fireRewardConfetti(0.45);
-    const second = setTimeout(() => fireRewardConfetti(0.35), 350);
-    const done = setTimeout(onDone, 3200);
+    // let the reward card paint first, then start the confetti on the next frames
+    const burst = setTimeout(() => fireRewardConfetti(0.45), 140);
+    const done = setTimeout(onDone, 3000);
     return () => {
-      clearTimeout(second);
+      clearTimeout(burst);
       clearTimeout(done);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -28,7 +28,7 @@ export const RewardCelebration: React.FC<RewardCelebrationProps> = ({ php, title
   return (
     <div
       onClick={onDone}
-      className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/70 animate-in fade-in duration-200 cursor-pointer"
+      className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-black/70 cursor-pointer"
     >
       <div className="w-full max-w-xs rounded-3xl bg-gradient-to-b from-slate-900 to-cyan-950 border border-amber-400/60 p-6 text-center shadow-2xl shadow-amber-500/20">
         <div className="text-5xl mb-1">🪙</div>

@@ -4,6 +4,7 @@ import '@fontsource-variable/plus-jakarta-sans';
 import '@fontsource-variable/fredoka';
 import './index.css';
 import { isNativeAds } from './utils/ads';
+import { initConfetti } from './utils/confetti';
 
 // Guard against third-party browser extension errors (e.g. MetaMask chrome-extension injection)
 if (typeof window !== 'undefined') {
@@ -33,3 +34,5 @@ if (isNativeAds) {
 
 createRoot(document.getElementById('root')!).render(<App />);
 
+// Create the reusable confetti layer once the first screen is on the screen.
+setTimeout(initConfetti, 800);

@@ -183,7 +183,8 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
   // Celebration screen (confetti + PawCoins + peso value) for claimed rewards
   const [celebration, setCelebration] = useState<{ php: number; title: string; key: number } | null>(null);
   const celebrate = useCallback((php: number, title: string) => {
-    setCelebration({ php, title, key: Date.now() });
+    // a short delay so the claim, the balance update and any closing popup are not all drawn in the same frame
+    setTimeout(() => setCelebration({ php, title, key: Date.now() }), 120);
   }, []);
 
   // Add earnings helper

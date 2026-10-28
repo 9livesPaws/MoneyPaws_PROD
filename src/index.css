@@ -112,3 +112,6 @@ button, a, input, select, textarea, [role="button"] {
 .mp-swing { transform-box: view-box; transform-origin: 80px 96px; animation: mp-swing 1s ease-in-out infinite; }
 .mp-float { animation: mp-floaty 2.4s ease-in-out infinite; }
 .mp-dot { animation: mp-dot 1s ease-in-out infinite; }
+
+/* On the phone: no fade/zoom entrance animations on popups (they cause a split-second flash on some devices) */
+.native-app [class*="animate-in"] { animation: none !important; }
