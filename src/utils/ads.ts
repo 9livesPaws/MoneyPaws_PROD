@@ -45,7 +45,10 @@ export async function initAds(): Promise<void> {
 
 let bannerListening = false;
 // Tells the Android shell how tall the banner is, so the web page sits fully above it.
+let lastBannerHeight = -1;
 function setBannerHeight(h: number) {
+  if (h === lastBannerHeight) return; // avoid pointless relayouts (they cause flicker)
+  lastBannerHeight = h;
   try {
     (window as unknown as { MPAds?: { setBanner?: (n: number) => void } }).MPAds?.setBanner?.(Math.max(0, h || 0));
   } catch {
@@ -90,6 +93,22 @@ export async function removeBanner(): Promise<void> {
   setBannerHeight(0);
 }
 
+/** Android WebView can come back blank after a full-screen ad; nudge it to redraw. */
+export function forceRepaint(): void {
+  const el = document.documentElement;
+  const nudge = () => {
+    el.style.transform = 'translateZ(0)';
+    requestAnimationFrame(() => {
+      void el.offsetHeight;
+      el.style.transform = '';
+      window.dispatchEvent(new Event('resize'));
+    });
+  };
+  nudge();
+  setTimeout(nudge, 250);
+  setTimeout(nudge, 900);
+}
+
 export type RewardedResult = 'rewarded' | 'dismissed' | 'error';
 
 /** Shows a real AdMob rewarded ad. Resolves 'rewarded' only if the user earned it. */
@@ -120,5 +139,6 @@ export async function showRewardedAd(): Promise<RewardedResult> {
     });
   } finally {
     await Promise.all(handles.map((h) => h.remove().catch(() => {})));
+    forceRepaint();
   }
 }

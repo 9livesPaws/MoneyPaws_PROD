@@ -787,7 +787,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
                 sound.playClick();
                 setActiveModal(null);
               }}
-              className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="sticky top-0 z-30 self-end -mb-7 shrink-0 p-1.5 rounded-full bg-slate-900 border border-slate-600 text-slate-200 hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -812,7 +812,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
                 sound.playClick();
                 setActiveModal(null);
               }}
-              className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="sticky top-0 z-30 self-end -mb-7 shrink-0 p-1.5 rounded-full bg-slate-900 border border-slate-600 text-slate-200 hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -823,6 +823,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
               onAddPaws={(paws, title, type) => {
                 const php = Number((paws / 1000).toFixed(2));
                 addEarnings(php, title, type);
+                if (php >= 0.01) celebrate(php, title);
               }}
               onUseFreeSpin={() => {
                 setState((prev) => ({ ...prev, freeSpins: Math.max(0, prev.freeSpins - 1) }));
@@ -847,7 +848,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
                 sound.playClick();
                 setActiveModal(null);
               }}
-              className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="sticky top-0 z-30 self-end -mb-7 shrink-0 p-1.5 rounded-full bg-slate-900 border border-slate-600 text-slate-200 hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -858,6 +859,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
               onAddPaws={(paws, title, type) => {
                 const php = Number((paws / 1000).toFixed(2));
                 addEarnings(php, title, type);
+                if (php >= 0.01) celebrate(php, title);
               }}
               onUseFreeSpin={() => {
                 setState((prev) => ({ ...prev, freeSpins: Math.max(0, prev.freeSpins - 1) }));
@@ -882,7 +884,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
                 sound.playClick();
                 setActiveModal(null);
               }}
-              className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="sticky top-0 z-30 self-end -mb-7 shrink-0 p-1.5 rounded-full bg-slate-900 border border-slate-600 text-slate-200 hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -893,6 +895,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
               onAddPaws={(paws, title, type) => {
                 const php = Number((paws / 1000).toFixed(2));
                 addEarnings(php, title, type);
+                if (php >= 0.01) celebrate(php, title);
               }}
               onUseFreeSpin={() => {
                 setState((prev) => ({ ...prev, freeSpins: Math.max(0, prev.freeSpins - 1) }));
@@ -987,7 +990,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
                 sound.playClick();
                 setActiveModal(null);
               }}
-              className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+              className="sticky top-0 z-30 self-end -mb-7 shrink-0 p-1.5 rounded-full bg-slate-900 border border-slate-600 text-slate-200 hover:text-white cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>

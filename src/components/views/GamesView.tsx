@@ -115,23 +115,28 @@ const FruitGame: React.FC<{
     if (!isPlaying) return;
 
     let lastSpawn = Date.now();
+    let lastTick = performance.now();
 
-    const updateLoop = () => {
-      const now = Date.now();
-      if (now - lastSpawn > 550) {
-        spawnItem();
-        lastSpawn = now;
+    const updateLoop = (t: number) => {
+      const dt = t - lastTick;
+      // update ~30 times per second (each update re-renders), keep speed the same via elapsed time
+      if (dt >= 32) {
+        lastTick = t;
+        const frames = Math.min(dt, 100) / 16.67;
+        const now = Date.now();
+        if (now - lastSpawn > 550) {
+          spawnItem();
+          lastSpawn = now;
+        }
+        setItems((prev) =>
+          prev
+            .map((item) => ({
+              ...item,
+              y: item.y + item.speed * frames,
+            }))
+            .filter((item) => item.y < 105)
+        );
       }
-
-      setItems((prev) =>
-        prev
-          .map((item) => ({
-            ...item,
-            y: item.y + item.speed,
-          }))
-          .filter((item) => item.y < 105)
-      );
-
       animFrameRef.current = requestAnimationFrame(updateLoop);
     };
 

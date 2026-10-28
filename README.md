@@ -22,7 +22,9 @@ On web, "Watch & Earn" shows a labelled preview ad. AdMob only works in the nati
      so users can type the code in the app (no web link needed).
 2. GitHub repo > Settings > Secrets and variables > Actions > New repository secret:
    - `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (Supabase > Project Settings > API; use the anon/public key, never service_role)
-   - For real ads only: `ADMOB_APP_ID`, `ADMOB_REWARDED_ID`, `ADMOB_BANNER_ID`
+   - For real ads only: `ADMOB_APP_ID` (AdMob > Apps > App settings, looks like ca-app-pub-...~...),
+     `ADMOB_REWARDED_ID` (the "Video Rewards" unit) and `ADMOB_BANNER_ID` (the "Bottom Banner" unit).
+     Copy each with the copy button in AdMob; do not retype. (The Interstitial unit is not used by the app yet.)
 3. Repo > Actions > "Build Android APK" > Run workflow
    (leave production_ads = false first to check with Google test ads).
 4. When it finishes, download `moneypaws-apk` from the run's Artifacts and install `app-debug.apk` on a phone.

@@ -67,8 +67,24 @@ public class MainActivity extends BridgeActivity {
         ViewGroup.LayoutParams lp = appWebView.getLayoutParams();
         if (lp instanceof ViewGroup.MarginLayoutParams) {
             ViewGroup.MarginLayoutParams m = (ViewGroup.MarginLayoutParams) lp;
-            m.setMargins(barLeft, barTop, barRight, barBottom + bannerPx);
+            int bottom = barBottom + bannerPx;
+            if (m.leftMargin == barLeft && m.topMargin == barTop && m.rightMargin == barRight && m.bottomMargin == bottom) {
+                return; // nothing changed: avoid a needless relayout (it causes flicker)
+            }
+            m.setMargins(barLeft, barTop, barRight, bottom);
             appWebView.setLayoutParams(m);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Coming back from a full-screen ad can leave the WebView blank: ask it to redraw.
+        if (appWebView != null) {
+            appWebView.postDelayed(() -> {
+                appWebView.requestLayout();
+                appWebView.invalidate();
+            }, 200);
         }
     }
 

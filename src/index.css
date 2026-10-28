@@ -62,3 +62,7 @@ button, a, input, select, textarea, [role="button"] {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
+
+/* Popups taller than the screen: scroll from the top so the close button is always reachable */
+.fixed.inset-0.items-center { overflow-y: auto; overscroll-behavior: contain; }
+.fixed.inset-0.items-center > * { margin-top: auto; margin-bottom: auto; }
