@@ -56,7 +56,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="flex items-center gap-1 px-2 py-1 rounded-lg bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/30 text-orange-400 transition-all cursor-pointer text-xs font-semibold"
             title="Daily Check-in Streak"
           >
-            <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400 animate-pulse" />
+            <Flame className="w-3.5 h-3.5 text-orange-400 fill-orange-400 " />
             <span>{streakDays}d</span>
           </button>
 

@@ -59,22 +59,22 @@ export const ShareEarningsModal: React.FC<ShareEarningsModalProps> = ({
 
     // Cyan radial ambient glow
     const radial = ctx.createRadialGradient(width / 2, height * 0.42, 20, width / 2, height * 0.42, 380);
-    radial.addColorStop(0, 'rgba(6, 182, 212, 0.25)');
-    radial.addColorStop(1, 'rgba(6, 182, 212, 0)');
+    radial.addColorStop(0, 'rgba(43, 196, 104, 0.25)');
+    radial.addColorStop(1, 'rgba(43, 196, 104, 0)');
     ctx.fillStyle = radial;
     ctx.fillRect(0, 0, width, height);
 
     // Glowing Outer Frame Border
     ctx.lineWidth = 6;
-    ctx.strokeStyle = '#06b6d4';
-    ctx.shadowColor = 'rgba(6, 182, 212, 0.6)';
+    ctx.strokeStyle = '#2bc468';
+    ctx.shadowColor = 'rgba(43, 196, 104, 0.6)';
     ctx.shadowBlur = 20;
     ctx.strokeRect(30, 30, width - 60, height - 60);
     ctx.shadowBlur = 0; // Reset
 
     // Brand Header
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#55dcb3';
     ctx.font = 'bold 36px "Fredoka", sans-serif';
     ctx.fillText('🐾 MoneyPaws', width / 2, 95);
 
@@ -85,10 +85,10 @@ export const ShareEarningsModal: React.FC<ShareEarningsModalProps> = ({
     // User Avatar Badge
     ctx.beginPath();
     ctx.arc(width / 2, 195, 38, 0, Math.PI * 2);
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#1b1f45';
     ctx.fill();
     ctx.lineWidth = 3;
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = '#55dcb3';
     ctx.stroke();
 
     ctx.font = '36px "Plus Jakarta Sans", sans-serif';
@@ -101,14 +101,14 @@ export const ShareEarningsModal: React.FC<ShareEarningsModalProps> = ({
 
     // Total Earnings Box
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+    ctx.strokeStyle = 'rgba(43, 196, 104, 0.5)';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.roundRect(100, 290, width - 200, 180, 24);
     ctx.fill();
     ctx.stroke();
 
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#55dcb3';
     ctx.font = 'bold 15px "Plus Jakarta Sans", sans-serif';
     ctx.fillText('TOTAL PASSIVE INCOME EARNED', width / 2, 335);
 
@@ -139,7 +139,7 @@ export const ShareEarningsModal: React.FC<ShareEarningsModalProps> = ({
     ctx.fillStyle = '#94a3b8';
     ctx.font = '13px "Plus Jakarta Sans", sans-serif';
     ctx.fillText('Steps Today', 195, statsY + 30);
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#55dcb3';
     ctx.font = 'bold 22px "Plus Jakarta Sans", sans-serif';
     ctx.fillText(`${stepsToday.toLocaleString()}`, 195, statsY + 62);
 
@@ -170,8 +170,8 @@ export const ShareEarningsModal: React.FC<ShareEarningsModalProps> = ({
     ctx.fillText(`${consecutiveDays} Days 🔥`, 605, statsY + 62);
 
     // Referral Code Pill
-    ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
-    ctx.strokeStyle = '#06b6d4';
+    ctx.fillStyle = 'rgba(43, 196, 104, 0.15)';
+    ctx.strokeStyle = '#2bc468';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.roundRect(140, 630, width - 280, 60, 30);

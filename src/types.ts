@@ -62,6 +62,7 @@ export interface UserState {
   targetThresholdPhp: number; // e.g. 5.50 or 50.00 for initial cashout
   totalEarnedPhp: number;
   tapMineCount: number; // completed cat-mining sessions (all time)
+  dailyKey: string;
   miningStartedAt: number | null;
   miningEndsAt: number | null;
   miningDay: string;

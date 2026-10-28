@@ -23,7 +23,7 @@ export const DailyProgressRing: React.FC<DailyProgressRingProps> = ({
   const strokeDashoffset = circumference - (percent / 100) * circumference;
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-r from-slate-900/90 via-cyan-950/30 to-slate-900/90 border border-cyan-500/35 p-3.5 shadow-[0_0_15px_rgba(6,182,212,0.12)] flex items-center justify-between gap-3">
+    <div className="w-full rounded-2xl bg-gradient-to-r from-slate-900/90 via-cyan-950/30 to-slate-900/90 border border-cyan-500/35 p-3.5 flex items-center justify-between gap-3">
       {/* Left: Interactive Progress Ring */}
       <div className="relative w-22 h-22 flex items-center justify-center shrink-0">
         <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 90 90">
@@ -48,14 +48,14 @@ export const DailyProgressRing: React.FC<DailyProgressRingProps> = ({
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
-            className="transition-all duration-700 ease-out drop-shadow-[0_0_6px_rgba(6,182,212,0.8)]"
+            className="transition-all duration-700 ease-out drop-"
             fill="transparent"
           />
 
           <defs>
             <linearGradient id="cyanProgressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#06b6d4" />
-              <stop offset="50%" stopColor="#38bdf8" />
+              <stop offset="0%" stopColor="#2bc468" />
+              <stop offset="50%" stopColor="#55dcb3" />
               <stop offset="100%" stopColor="#22d3ee" />
             </linearGradient>
           </defs>
@@ -63,7 +63,7 @@ export const DailyProgressRing: React.FC<DailyProgressRingProps> = ({
 
         {/* Center percentage label */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="font-mono text-xs font-black text-cyan-300 drop-shadow">
+          <span className="font-mono text-xs font-black text-cyan-300 ">
             {percent.toFixed(0)}%
           </span>
           <span className="text-[8px] uppercase tracking-wider text-slate-400 font-semibold">
@@ -82,7 +82,7 @@ export const DailyProgressRing: React.FC<DailyProgressRingProps> = ({
             Daily Income Target
           </span>
           {isGoalReached && (
-            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse">
+            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 ">
               Achieved!
             </span>
           )}

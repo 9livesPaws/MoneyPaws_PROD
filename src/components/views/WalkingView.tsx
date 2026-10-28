@@ -127,7 +127,7 @@ export const WalkingView: React.FC<WalkingViewProps> = ({
               cx="50"
               cy="50"
               r="40"
-              stroke="#0f172a"
+              stroke="#1b1f45"
               strokeWidth="8"
               fill="transparent"
             />
@@ -146,8 +146,8 @@ export const WalkingView: React.FC<WalkingViewProps> = ({
             />
             <defs>
               <linearGradient id="cyanGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#06b6d4" />
-                <stop offset="100%" stopColor="#38bdf8" />
+                <stop offset="0%" stopColor="#2bc468" />
+                <stop offset="100%" stopColor="#55dcb3" />
               </linearGradient>
             </defs>
           </svg>

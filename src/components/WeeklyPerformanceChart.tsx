@@ -58,7 +58,7 @@ export const WeeklyPerformanceChart: React.FC<WeeklyPerformanceChartProps> = ({
   );
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/20 to-slate-900/95 border border-cyan-500/35 p-4 shadow-[0_0_20px_rgba(6,182,212,0.12)] flex flex-col gap-3.5">
+    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/20 to-slate-900/95 border border-cyan-500/35 p-4 flex flex-col gap-3.5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -200,7 +200,7 @@ export const WeeklyPerformanceChart: React.FC<WeeklyPerformanceChartProps> = ({
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#090d16',
-                  borderColor: '#06b6d4',
+                  borderColor: '#2bc468',
                   borderRadius: '10px',
                   fontSize: '10px',
                   color: '#fff',
@@ -245,8 +245,8 @@ export const WeeklyPerformanceChart: React.FC<WeeklyPerformanceChartProps> = ({
                   dataKey="earnings"
                   stroke="#22d3ee"
                   strokeWidth={3}
-                  dot={{ fill: '#06b6d4', r: 3 }}
-                  activeDot={{ r: 5, fill: '#38bdf8' }}
+                  dot={{ fill: '#2bc468', r: 3 }}
+                  activeDot={{ r: 5, fill: '#55dcb3' }}
                   name="earnings"
                 />
               )}

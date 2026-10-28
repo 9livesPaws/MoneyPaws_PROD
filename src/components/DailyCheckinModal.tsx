@@ -1,3 +1,4 @@
+import { todayKey } from '../utils/mining';
 import React from 'react';
 import { X, Gift, Check, Flame, Sparkles, TrendingUp } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
@@ -39,7 +40,7 @@ export const DailyCheckinModal: React.FC<DailyCheckinModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = todayKey();
   const alreadyClaimedToday = lastCheckinDate === todayStr;
   const currentStreakDay = ((consecutiveDays - 1) % 7) + 1;
 

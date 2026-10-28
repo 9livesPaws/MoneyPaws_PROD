@@ -380,7 +380,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
   };
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/25 to-slate-900/95 border border-cyan-500/40 p-4 shadow-[0_0_20px_rgba(6,182,212,0.15)] flex flex-col gap-3.5">
+    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/25 to-slate-900/95 border border-cyan-500/40 p-4 flex flex-col gap-3.5">
       {/* Header with Title & Live Pulse */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -393,7 +393,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
                 Top Earners Hall
               </h3>
               <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                <span className=" absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
               </span>
             </div>
@@ -479,7 +479,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
           <span className="text-[11px] font-extrabold text-amber-200 truncate w-full mt-1.5">
             {leaders[0]?.name}
           </span>
-          <span className="text-xs font-mono font-black text-amber-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]">
+          <span className="text-xs font-mono font-black text-amber-400 drop-">
             {formatPhp(leaders[0]?.totalEarnedPhp || 0)}
           </span>
           <span className="text-[9px] text-amber-300/80 font-semibold truncate w-full">
@@ -543,7 +543,7 @@ export const Leaderboard: React.FC<LeaderboardProps> = ({
       </div>
 
       {/* Current User Pinned Rank Card */}
-      <div className="p-3 rounded-xl bg-gradient-to-r from-cyan-950/60 via-slate-950 to-cyan-950/60 border-2 border-cyan-400/60 flex items-center justify-between shadow-[0_0_15px_rgba(6,182,212,0.25)]">
+      <div className="p-3 rounded-xl bg-gradient-to-r from-cyan-950/60 via-slate-950 to-cyan-950/60 border-2 border-cyan-400/60 flex items-center justify-between ">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-sm shadow">
             🐾

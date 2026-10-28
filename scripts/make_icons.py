@@ -2,7 +2,7 @@
 import os
 from PIL import Image, ImageDraw
 
-BG = (15, 23, 42, 255)       # #0F172A
+BG = (18, 21, 47, 255)       # #12152F
 SS = 4                        # supersampling for smooth edges
 
 def curve(p0, p1, p2, n=24):

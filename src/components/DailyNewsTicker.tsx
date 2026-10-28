@@ -16,49 +16,41 @@ const NEWS_UPDATES: NewsItem[] = [
     id: 'news-1',
     tag: 'Daily Tip',
     tagColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30',
-    icon: '💡',
-    message: 'Walk to the store! 500 steps converts into instant cash for your morning coffee.',
-    highlight: '500 steps = Instant Cash',
+    icon: '👟',
+    message: 'Every 250 steps you walk can be converted into ₱0.15.',
+    highlight: '250 steps = ₱0.15',
   },
   {
     id: 'news-2',
-    tag: 'Mission',
+    tag: 'Cat Mining',
     tagColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-    icon: '☕',
-    message: 'MoneyPaws helps you pay for small daily expenses—coffee, snacks, & mobile load!',
-    highlight: 'Micro-Expenses Covered',
+    icon: '⛏️',
+    message: 'Tap once and your cat mines for 3 hours. Claim up to ₱0.30 a day.',
+    highlight: '3 hours per session',
   },
   {
     id: 'news-3',
-    tag: 'Update',
-    tagColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
-    icon: '📢',
-    message: 'Over ₱28,500+ disbursed to GCash & Maya accounts this week with 0% fees.',
-    highlight: '₱28,500+ Disbursed',
+    tag: 'Watch & Earn',
+    tagColor: 'bg-rose-500/20 text-rose-300 border-rose-500/30',
+    icon: '📺',
+    message: 'Watch up to 10 short ads a day and earn ₱0.20 for each one.',
+    highlight: '₱0.20 per ad',
   },
   {
     id: 'news-4',
-    tag: 'Earning Hack',
+    tag: 'Cash Out',
     tagColor: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-    icon: '⚡',
-    message: 'Tap the glowing Paw to mine coins while waiting in line or on daily commute.',
-    highlight: 'Tap & Mine Anywhere',
+    icon: '💸',
+    message: 'Cash out from ₱10 to GCash, Maya, PayPal or ONE.',
+    highlight: 'From ₱10',
   },
   {
     id: 'news-5',
-    tag: 'Streak Alert',
-    tagColor: 'bg-orange-500/20 text-orange-300 border-orange-500/30',
-    icon: '🔥',
-    message: 'Keep your login streak active! Day 7 unlocks a ₱5.00 Grand Mystery Box.',
-    highlight: 'Day 7 Mystery Box',
-  },
-  {
-    id: 'news-6',
-    tag: 'Referral',
-    tagColor: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-    icon: '👥',
-    message: 'Share your invite code for an instant ₱1.00 credit + 10% lifetime commission.',
-    highlight: '₱1.00 + 10% Lifetime',
+    tag: 'Our Mission',
+    tagColor: 'bg-sky-500/20 text-sky-300 border-sky-500/30',
+    icon: '☕',
+    message: 'MoneyPaws helps with small daily expenses like coffee, snacks and mobile load.',
+    highlight: 'Small daily wins',
   },
 ];
 
@@ -97,7 +89,7 @@ export const DailyNewsTicker: React.FC<DailyNewsTickerProps> = ({ onOpenTipsModa
   return (
     <div
       onClick={handleNext}
-      className="relative w-full rounded-xl bg-gradient-to-r from-slate-950/90 via-cyan-950/40 to-slate-950/90 border border-cyan-500/35 p-2 px-3 shadow-[0_0_15px_rgba(6,182,212,0.12)] cursor-pointer hover:border-cyan-400/60 transition-all active:scale-98 select-none overflow-hidden group"
+      className="relative w-full rounded-xl bg-gradient-to-r from-slate-950/90 via-cyan-950/40 to-slate-950/90 border border-cyan-500/35 p-2 px-3 cursor-pointer hover:border-cyan-400/60 transition-all active:scale-98 select-none overflow-hidden group"
       title="Tap to cycle daily tips & news"
     >
       {/* Subtle ambient light bar */}

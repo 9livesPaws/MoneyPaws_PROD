@@ -134,7 +134,7 @@ export const DailyMissions: React.FC<DailyMissionsProps> = ({
   };
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/25 to-slate-900/95 border border-cyan-500/40 p-4 shadow-[0_0_20px_rgba(6,182,212,0.15)] flex flex-col gap-3.5">
+    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/25 to-slate-900/95 border border-cyan-500/40 p-4 flex flex-col gap-3.5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -181,7 +181,7 @@ export const DailyMissions: React.FC<DailyMissionsProps> = ({
         {/* Progress bar */}
         <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800 p-0.2">
           <div
-            className="h-full bg-gradient-to-r from-cyan-500 via-sky-400 to-amber-400 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+            className="h-full bg-gradient-to-r from-cyan-500 via-sky-400 to-amber-400 rounded-full transition-all duration-500 "
             style={{ width: `${Math.min(100, (completedCount / missions.length) * 100)}%` }}
           />
         </div>
@@ -190,7 +190,7 @@ export const DailyMissions: React.FC<DailyMissionsProps> = ({
         {canClaimMegaBonus && (
           <button
             onClick={handleClaimMegaBonus}
-            className="w-full mt-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 cursor-pointer animate-pulse"
+            className="w-full mt-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 text-slate-950 font-extrabold text-xs shadow-lg shadow-amber-500/30 flex items-center justify-center gap-1.5 cursor-pointer "
           >
             <Gift className="w-4 h-4 fill-slate-950" />
             <span>Claim Master Bounty Chest (+₱0.30 & Free Spin)!</span>

@@ -43,7 +43,7 @@ export const HabitsWeeklyConsistency: React.FC<HabitsWeeklyConsistencyProps> = (
   );
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-teal-950/20 to-slate-900/95 border border-teal-500/35 p-3.5 shadow-[0_0_15px_rgba(20,184,166,0.12)] flex flex-col gap-3">
+    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-teal-950/20 to-slate-900/95 border border-teal-500/35 p-3.5 flex flex-col gap-3">
       {/* Header: Title & Overall Weekly Score */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

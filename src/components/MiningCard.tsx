@@ -83,7 +83,7 @@ export const MiningCard: React.FC<MiningCardProps> = ({
         className="relative w-44 h-44 cursor-pointer select-none active:scale-95 transition-transform disabled:cursor-default disabled:active:scale-100"
       >
         <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full -rotate-90">
-          <circle cx="50" cy="50" r={R} fill="#020617" stroke="#0f172a" strokeWidth="7" />
+          <circle cx="50" cy="50" r={R} fill="#12152f" stroke="#1b1f45" strokeWidth="7" />
           <circle
             cx="50"
             cy="50"

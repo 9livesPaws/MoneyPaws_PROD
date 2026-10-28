@@ -75,7 +75,7 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
   };
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/25 to-slate-900/95 border border-cyan-500/35 p-4 shadow-[0_0_15px_rgba(6,182,212,0.12)] flex flex-col gap-3">
+    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/25 to-slate-900/95 border border-cyan-500/35 p-4 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -239,7 +239,7 @@ export const DailyHabitTracker: React.FC<DailyHabitTrackerProps> = ({
               <div
                 className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-mono font-bold shrink-0 transition-all ${
                   habit.completed
-                    ? 'bg-orange-500/25 border border-orange-400/50 text-orange-300 shadow-[0_0_8px_rgba(249,115,22,0.35)]'
+                    ? 'bg-orange-500/25 border border-orange-400/50 text-orange-300 '
                     : 'bg-slate-900 border border-slate-700/80 text-orange-400/80'
                 }`}
                 title={`${habit.streakDays || 1}-day completion streak`}

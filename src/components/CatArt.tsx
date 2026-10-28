@@ -24,8 +24,8 @@ export const CatMiner: React.FC<CatMinerProps> = ({ size = 64, mining = false, c
     <circle cx="50" cy="27" r="2.6" fill="#fde047" />
     {/* eyes */}
     <g className="mp-blink">
-      <ellipse cx="37" cy="62" rx="3.6" ry="4.6" fill="#0f172a" />
-      <ellipse cx="63" cy="62" rx="3.6" ry="4.6" fill="#0f172a" />
+      <ellipse cx="37" cy="62" rx="3.6" ry="4.6" fill="#1b1f45" />
+      <ellipse cx="63" cy="62" rx="3.6" ry="4.6" fill="#1b1f45" />
       <circle cx="38.4" cy="60.4" r="1.2" fill="#fff" />
       <circle cx="64.4" cy="60.4" r="1.2" fill="#fff" />
     </g>

@@ -9,6 +9,7 @@ export const DEFAULT_USER_STATE: UserState = {
   targetThresholdPhp: 10.00, // Lowest cash-out tier: ₱10 = 10,000 PawCoins
   totalEarnedPhp: 0,
   tapMineCount: 0,
+  dailyKey: '',
   miningStartedAt: null,
   miningEndsAt: null,
   miningDay: '',

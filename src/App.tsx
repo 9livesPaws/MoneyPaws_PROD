@@ -7,9 +7,10 @@ import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 
 import type { Session } from '@supabase/supabase-js';
 import { AuthScreen } from './components/AuthScreen';
 import { RewardCelebration } from './components/RewardCelebration';
+import { CatMiner } from './components/CatArt';
 import { scheduleMiningDone, cancelMiningDone, scheduleDailyReminder } from './utils/notify';
 import { MINING_DAILY_CAP_PHP, MINING_DURATION_MS, MINING_REWARD_PHP, todayKey } from './utils/mining';
-import { initAds, showBottomBanner, hideBanner, resumeBanner, removeBanner, isNativeAds } from './utils/ads';
+import { initAds, showBottomBanner, hideBanner, resumeBanner, removeBanner, isNativeAds, showRewardedAd } from './utils/ads';
 import { pushProgress, pullProgress } from './utils/supabase';
 import { getSupabase, getCurrentSession, isAuthBusy, signOut, supabaseConfigured } from './utils/supabase';
 import { loadUserState, saveUserState, formatPhp, hasSavedState } from './utils/storage';
@@ -32,6 +33,8 @@ import { ShareEarningsModal } from './components/ShareEarningsModal';
 import { AchievementsView } from './components/AchievementsView';
 import { WeeklySocialChallengeModal } from './components/WeeklySocialChallengeModal';
 import { Smartphone, Monitor, X, Sparkles, Home, Pickaxe, Gamepad2, Footprints as FootprintsIcon, User as UserIcon } from 'lucide-react';
+
+const DAILY_AD_LIMIT = 10;
 
 interface MainAppProps {
   userId?: string;
@@ -70,6 +73,28 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     | 'achievements'
     | 'socialChallenge'
   >(null);
+
+  // New day: reset the "today" counters (ads, steps, games, missions). Checked at start, every minute, and on resume.
+  useEffect(() => {
+    const check = () => {
+      const today = todayKey();
+      setState((prev) =>
+        prev.dailyKey === today
+          ? prev
+          : { ...prev, dailyKey: today, adsWatchedToday: 0, stepsToday: 0, gamesPlayedToday: 0, claimedMissionIds: [] }
+      );
+    };
+    check();
+    const iv = setInterval(check, 60000);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') check();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearInterval(iv);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, []);
 
   // Re-arm notifications when the app opens (only if the user already allowed them)
   useEffect(() => {
@@ -280,7 +305,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     setState((prev) => {
       const nextBalance = Number((prev.balancePhp + earned).toFixed(2));
       const nextTotal = Number((prev.totalEarnedPhp + earned).toFixed(2));
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = todayKey();
 
       const newTx: Transaction = {
         id: `tx-daily-${Date.now()}`,
@@ -306,6 +331,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
 
   // Watch Rewarded Ad Completed
   const handleAdRewardClaimed = useCallback((pawsScore: number) => {
+    if (stateRef.current.adsWatchedToday >= DAILY_AD_LIMIT) return;
     const cash = 0.20; // ₱0.20 per rewarded ad
     celebrate(cash, 'Rewarded ad watched');
     setState((prev) => {
@@ -421,7 +447,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
   // Claim Daily Lucky Chest (Distinct Mystery Event)
   const handleClaimLuckyChest = useCallback((reward: ChestReward) => {
     setState((prev) => {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = todayKey();
       const nextBalance = Number((prev.balancePhp + reward.php).toFixed(2));
       const nextTotal = Number((prev.totalEarnedPhp + reward.php).toFixed(2));
       const bonusSpins = reward.bonusSpins || 0;
@@ -474,6 +500,27 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     const timer = setTimeout(() => setToast(null), 2500);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  // Watch & Earn: on the phone go straight to the ad (no extra screen); the browser preview keeps its sample screen.
+  const [adBusy, setAdBusy] = useState(false);
+  const startWatchAd = useCallback(async () => {
+    if (stateRef.current.adsWatchedToday >= DAILY_AD_LIMIT) {
+      showToast(`Daily limit reached (${DAILY_AD_LIMIT} ads). Come back tomorrow!`, '📺');
+      return;
+    }
+    if (!isNativeAds) {
+      setActiveModal('watchAd');
+      return;
+    }
+    if (adBusy) return;
+    setAdBusy(true);
+    const result = await showRewardedAd();
+    setAdBusy(false);
+    if (result === 'rewarded') handleAdRewardClaimed(200);
+    else if (result === 'dismissed') showToast('Watch the whole ad to earn your reward.', '📺');
+    else showToast('No ad available right now. Please try again in a moment.', '📺');
+  }, [adBusy, handleAdRewardClaimed, showToast]);
+
 
   // Theme Toggle (Slate vs AMOLED True Black)
   const handleToggleTheme = useCallback(() => {
@@ -563,7 +610,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
   const handleTriviaReward = useCallback((php: number, paws: number, title: string) => {
     celebrate(php, title);
     setState((prev) => {
-      const todayStr = new Date().toISOString().split('T')[0];
+      const todayStr = todayKey();
       const nextBalance = Number((prev.balancePhp + php).toFixed(2));
       const nextTotal = Number((prev.totalEarnedPhp + php).toFixed(2));
       const newTx: Transaction = {
@@ -663,7 +710,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
       <main
         className={`w-full transition-all duration-300 ${
           isPhoneFrame
-            ? 'max-w-[410px] min-h-[840px] bg-slate-950 rounded-none md:rounded-[44px] border-0 md:border-[10px] md:border-slate-800 shadow-none md:shadow-[0_0_60px_rgba(6,182,212,0.25)] relative overflow-hidden flex flex-col'
+            ? 'max-w-[410px] min-h-[840px] bg-slate-950 rounded-none md:rounded-[44px] border-0 md:border-[10px] md:border-slate-800 shadow-none md:relative overflow-hidden flex flex-col'
             : 'max-w-2xl min-h-screen bg-slate-950 shadow-2xl relative overflow-hidden flex flex-col'
         }`}
       >
@@ -688,7 +735,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
             stepsToday={state.stepsToday}
             gamesPlayedToday={state.gamesPlayedToday}
             adsWatchedToday={state.adsWatchedToday}
-            hasClaimedCheckin={state.lastCheckinDate === new Date().toISOString().split('T')[0]}
+            hasClaimedCheckin={state.lastCheckinDate === todayKey()}
             claimedMissionIds={state.claimedMissionIds}
             lastLuckyChestDate={state.lastLuckyChestDate}
             theme={state.theme}
@@ -706,7 +753,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
             onOpenMenu={() => setActiveModal('menu')}
             onOpenProfile={() => setActiveModal('profile')}
             onOpenDailyLogins={() => setActiveModal('dailyLogins')}
-            onOpenWatchAd={() => setActiveModal('watchAd')}
+            onOpenWatchAd={startWatchAd}
             onOpenSpinWheel={() => setActiveModal('spinWheel')}
             onOpenWalking={() => setActiveModal('walking')}
             onOpenScratchCards={() => setActiveModal('scratch')}
@@ -872,7 +919,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
                 setState((prev) => ({ ...prev, freeScratchCards: Math.max(0, prev.freeScratchCards - 1) }));
               }}
               onOpenWatchAd={() => {
-                setActiveModal('watchAd');
+                startWatchAd();
               }}
             />
           </div>
@@ -908,7 +955,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
                 setState((prev) => ({ ...prev, freeScratchCards: Math.max(0, prev.freeScratchCards - 1) }));
               }}
               onOpenWatchAd={() => {
-                setActiveModal('watchAd');
+                startWatchAd();
               }}
             />
           </div>
@@ -944,7 +991,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
                 setState((prev) => ({ ...prev, freeScratchCards: Math.max(0, prev.freeScratchCards - 1) }));
               }}
               onOpenWatchAd={() => {
-                setActiveModal('watchAd');
+                startWatchAd();
               }}
             />
           </div>
@@ -1069,6 +1116,13 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
         onOpenWalking={() => setActiveModal('walking')}
         onClaimReward={handleSocialChallengeReward}
       />
+
+      {adBusy && (
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[55] flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800 border border-slate-600 shadow-lg">
+          <CatMiner size={26} />
+          <span className="text-xs font-semibold text-slate-100">Loading your ad…</span>
+        </div>
+      )}
 
       {celebration && (
         <RewardCelebration

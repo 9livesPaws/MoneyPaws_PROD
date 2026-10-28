@@ -82,7 +82,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                 <Icon className={`w-5 h-5 ${isActive ? 'text-amber-400 stroke-[2.3]' : 'stroke-[1.8]'}`} />
                 {tab.badge && (
                   <span
-                    className={`absolute -top-1.5 -right-2 text-[10px] font-bold px-1 py-0.2 rounded-full min-w-4 text-center leading-tight shadow-md animate-pulse ${
+                    className={`absolute -top-1.5 -right-2 text-[10px] font-bold px-1 py-0.2 rounded-full min-w-4 text-center leading-tight shadow-md ${
                       tab.badgeColor || 'bg-emerald-500 text-slate-950'
                     }`}
                   >

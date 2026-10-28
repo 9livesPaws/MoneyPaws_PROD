@@ -1,5 +1,41 @@
 @import "tailwindcss";
 
+/* ===== MoneyPaws theme: friendly "earn app" palette (deep indigo + money green + gold) ===== */
+@theme {
+  --color-slate-50: #f6f7fd;
+  --color-slate-100: #ecedf9;
+  --color-slate-200: #d9dcf2;
+  --color-slate-300: #bcc2e5;
+  --color-slate-400: #959dcf;
+  --color-slate-500: #7c85bd;
+  --color-slate-600: #5a6399;
+  --color-slate-700: #3f4678;
+  --color-slate-800: #2a2f5c;
+  --color-slate-900: #1b1f45;
+  --color-slate-950: #12152f;
+
+  --color-cyan-50: #effcf3;
+  --color-cyan-100: #d8f8e2;
+  --color-cyan-200: #b3f0c8;
+  --color-cyan-300: #86e6ab;
+  --color-cyan-400: #52d885;
+  --color-cyan-500: #2bc468;
+  --color-cyan-600: #1fa356;
+  --color-cyan-700: #1b8247;
+  --color-cyan-800: #18663c;
+  --color-cyan-900: #154f31;
+  --color-cyan-950: #0a2c1b;
+
+  --color-sky-300: #8fe9cb;
+  --color-sky-400: #55dcb3;
+  --color-sky-500: #2ec79a;
+
+  --color-blue-400: #34d3bd;
+  --color-blue-500: #17b8a4;
+  --color-blue-600: #0f9c8b;
+  --color-blue-700: #0f7a70;
+}
+
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -55,7 +91,7 @@
 
 
 /* Never show white: paint dark immediately, calm the WebView */
-html, body, #root { background-color: #020617; }
+html, body, #root { background-color: #12152f; }
 html { color-scheme: dark; overscroll-behavior: none; }
 body { overscroll-behavior: none; -webkit-font-smoothing: antialiased; }
 button, a, input, select, textarea, [role="button"] {

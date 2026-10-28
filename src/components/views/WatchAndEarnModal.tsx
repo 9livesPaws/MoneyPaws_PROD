@@ -151,7 +151,7 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/10 to-transparent pointer-events-none" />
 
           <div className="mb-1 mp-float"><CatMiner size={isNativeAds ? 84 : 64} mining /></div>
-          <h3 className="font-fredoka text-xl font-bold tracking-tight text-white drop-shadow">
+          <h3 className="font-fredoka text-xl font-bold tracking-tight text-white ">
             {isNativeAds ? 'MoneyPaws Rewards' : sponsor.productName}
           </h3>
           <p className="text-xs text-white/85 mt-1 line-clamp-2 max-w-xs font-medium">
@@ -191,7 +191,7 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
 
           {isCompleted && (
             <div className="absolute inset-0 bg-slate-950/85 flex flex-col items-center justify-center p-4 animate-in zoom-in-95">
-              <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-1 animate-pulse" />
+              <CheckCircle2 className="w-12 h-12 text-emerald-400 mb-1 " />
               <span className="font-fredoka text-lg font-bold text-white">Video Completed!</span>
               <div className="text-amber-400 font-extrabold text-xl font-mono mt-0.5 flex items-center gap-1">
                 <Sparkles className="w-4 h-4" />

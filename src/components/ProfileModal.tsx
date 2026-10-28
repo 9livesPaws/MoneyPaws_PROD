@@ -216,7 +216,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   <XAxis dataKey="day" stroke="#64748b" fontSize={10} tickLine={false} />
                   <YAxis stroke="#64748b" fontSize={10} tickLine={false} tickFormatter={(v) => `₱${v}`} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#090d16', borderColor: '#06b6d4', borderRadius: '10px', fontSize: '11px', color: '#fff' }}
+                    contentStyle={{ backgroundColor: '#090d16', borderColor: '#2bc468', borderRadius: '10px', fontSize: '11px', color: '#fff' }}
                     formatter={(value: any) => [`₱${Number(value || 0).toFixed(2)}`, 'Earned']}
                   />
                   <Line
@@ -224,8 +224,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     dataKey="earnings"
                     stroke="#22d3ee"
                     strokeWidth={3}
-                    dot={{ fill: '#06b6d4', r: 3 }}
-                    activeDot={{ r: 5, fill: '#38bdf8' }}
+                    dot={{ fill: '#2bc468', r: 3 }}
+                    activeDot={{ r: 5, fill: '#55dcb3' }}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -255,7 +255,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     contentStyle={{ backgroundColor: '#090d16', borderColor: '#f59e0b', borderRadius: '10px', fontSize: '11px', color: '#fff' }}
                     formatter={(val: any) => [val === 1 ? 'Streak Checked ✅' : 'Inactive', 'Status']}
                   />
-                  <Bar dataKey="streak" fill="#06b6d4" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="streak" fill="#2bc468" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>

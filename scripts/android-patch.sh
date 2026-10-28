@@ -10,13 +10,13 @@ mkdir -p "$RES/drawable"
 cat > "$RES/drawable/splash.xml" <<'X'
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="#020617"/>
+    <solid android:color="#12152f"/>
 </shape>
 X
 cat > "$RES/values/mp_colors.xml" <<'X'
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="mp_bg">#020617</color>
+    <color name="mp_bg">#12152f</color>
 </resources>
 X
 if ! grep -q "windowBackground" "$RES/values/styles.xml"; then
@@ -111,7 +111,7 @@ fi
 # App icon (cat miner) instead of the default Capacitor logo
 if [ -d resources/android-res ]; then
   cp -r resources/android-res/. "$RES/"
-  [ -f "$RES/values/ic_launcher_background.xml" ] && sed -i 's/#FFFFFF/#0F172A/' "$RES/values/ic_launcher_background.xml"
+  [ -f "$RES/values/ic_launcher_background.xml" ] && sed -i 's/#FFFFFF/#12152F/' "$RES/values/ic_launcher_background.xml"
 fi
 
 echo "android-patch: dark launch theme + insets bridge applied"

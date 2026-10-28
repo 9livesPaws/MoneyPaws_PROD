@@ -178,7 +178,7 @@ const FruitGame: React.FC<{
             <span className="text-amber-400 font-bold">Score:</span>
             <span className="font-mono text-white font-extrabold text-sm">{score}</span>
             {combo > 2 && (
-              <span className="text-orange-400 font-bold animate-pulse text-[10px]">
+              <span className="text-orange-400 font-bold text-[10px]">
                 {combo}x Combo!
               </span>
             )}
@@ -313,7 +313,7 @@ const SpinWheelGame: React.FC<{
     // Outer glow ring
     ctx.beginPath();
     ctx.arc(0, 0, radius + 8, 0, Math.PI * 2);
-    ctx.fillStyle = '#0F172A';
+    ctx.fillStyle = '#12152F';
     ctx.fill();
     ctx.lineWidth = 4;
     ctx.strokeStyle = '#F59E0B';
@@ -331,7 +331,7 @@ const SpinWheelGame: React.FC<{
       ctx.fillStyle = slice.color;
       ctx.fill();
       ctx.lineWidth = 1.5;
-      ctx.strokeStyle = '#0F172A';
+      ctx.strokeStyle = '#12152F';
       ctx.stroke();
 
       // Text label
@@ -349,7 +349,7 @@ const SpinWheelGame: React.FC<{
     // Center hub
     ctx.beginPath();
     ctx.arc(0, 0, 22, 0, Math.PI * 2);
-    ctx.fillStyle = '#0F172A';
+    ctx.fillStyle = '#12152F';
     ctx.fill();
     ctx.lineWidth = 3;
     ctx.strokeStyle = '#F59E0B';
@@ -432,7 +432,7 @@ const SpinWheelGame: React.FC<{
       {/* Wheel Container with Pointer */}
       <div className="relative flex items-center justify-center">
         {/* Top Pointer */}
-        <div className="absolute -top-3 z-20 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[22px] border-t-amber-400 drop-shadow-md" />
+        <div className="absolute -top-3 z-20 w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[22px] border-t-amber-400 -md" />
 
         {/* Center Paw Logo in Hub */}
         <div className="absolute z-10 w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-orange-400 flex items-center justify-center text-xs shadow-md pointer-events-none">

@@ -3,7 +3,8 @@ import { Menu, User, Sparkles, Footprints, Tv, Calendar, RefreshCw, Trophy, Arro
 import { sound } from '../utils/sound';
 import { haptics } from '../utils/haptics';
 import { fireRewardConfetti } from '../utils/confetti';
-import { formatPhp } from '../utils/storage';
+import { formatPhp, formatPaws } from '../utils/storage';
+import { CatMiner } from './CatArt';
 import { Leaderboard } from './Leaderboard';
 import { MiningCard } from './MiningCard';
 import { HideableSection } from './HideableSection';
@@ -126,83 +127,40 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
       /* ignore */
     }
   };
-  const [currentTime, setCurrentTime] = useState('12:04 AM');
-
-  // Realistic Android clock
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      let hours = now.getHours();
-      const minutes = now.getMinutes().toString().padStart(2, '0');
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      hours = hours % 12 || 12;
-      setCurrentTime(`${hours}:${minutes} ${ampm}`);
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 10000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Threshold percentage
   const thresholdPercent = Math.min(100, Math.max(3, (balancePhp / targetThresholdPhp) * 100));
 
   return (
     <div className="w-full flex flex-col justify-start select-none">
-      {/* Android Top Status Bar */}
-      <div className="w-full px-5 pt-1.5 pb-1 flex items-center justify-between text-[11px] font-medium text-slate-300">
-        <span className="font-semibold text-slate-200">{currentTime}</span>
-        <div className="flex items-center gap-1.5 text-xs text-slate-300">
-          <span className="text-[9px] font-mono font-bold bg-slate-800/80 px-1 py-0.2 rounded text-cyan-300">
-            Vo LTE
-          </span>
-          <span className="text-[9px] font-mono font-bold bg-slate-800/80 px-1 py-0.2 rounded text-cyan-300">
-            4G LTE
-          </span>
-          <div className="flex items-center gap-0.5">
-            <span className="text-[10px] text-cyan-300 font-mono">21%</span>
-            <div className="w-4 h-2.5 rounded-xs border border-cyan-400 p-0.2 flex items-center">
-              <div className="h-full bg-cyan-400 w-1/4 rounded-2xs" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Top Header Bar (Hamburger, Title, Profile Avatar) */}
-      <div className="px-4 py-2.5 flex items-center justify-between">
-        {/* Hamburger Menu */}
-        <button
-          onClick={() => {
-            sound.playClick();
-            onOpenMenu();
-          }}
-          className="w-10 h-10 rounded-xl bg-slate-900/80 hover:bg-slate-800/90 border border-cyan-500/30 text-cyan-400 flex items-center justify-center cursor-pointer transition-all active:scale-95 shadow-md shadow-cyan-950/40"
-          title="Open Menu"
-        >
-          <Menu className="w-5 h-5 stroke-[2.2]" />
-        </button>
-
-        {/* Brand Title with MoneyPaws Logo and Cyan Neon Glow */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-sky-400 p-0.5 shadow-[0_0_14px_rgba(6,182,212,0.6)] flex items-center justify-center">
-            <div className="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center text-base">
-              🐾
-            </div>
-          </div>
-          <h1 className="font-fredoka text-2xl font-bold tracking-normal bg-gradient-to-r from-cyan-400 via-sky-300 to-cyan-200 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(6,182,212,0.6)]">
-            MoneyPaws
-          </h1>
-        </div>
-
-        {/* Profile Avatar Button */}
+      {/* Friendly header: mascot avatar + greeting + menu */}
+      <div className="px-4 pt-3 pb-2 flex items-center justify-between gap-3">
         <button
           onClick={() => {
             sound.playClick();
             onOpenProfile();
           }}
-          className="w-10 h-10 rounded-xl bg-slate-900/80 hover:bg-slate-800/90 border border-cyan-500/30 text-cyan-400 flex items-center justify-center cursor-pointer transition-all active:scale-95 shadow-md shadow-cyan-950/40"
-          title="User Profile"
+          className="flex items-center gap-2.5 min-w-0 cursor-pointer text-left"
+          title="Your profile"
         >
-          <User className="w-5 h-5 stroke-[2.2]" />
+          <div className="w-12 h-12 rounded-full bg-amber-100 border-2 border-amber-300 flex items-center justify-center shrink-0 overflow-hidden">
+            <CatMiner size={44} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[11px] text-slate-400 leading-none">Welcome back,</p>
+            <p className="font-fredoka text-lg font-bold text-white truncate leading-tight">{currentUserName}</p>
+          </div>
+        </button>
+
+        <button
+          onClick={() => {
+            sound.playClick();
+            onOpenMenu();
+          }}
+          className="w-10 h-10 shrink-0 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 flex items-center justify-center cursor-pointer"
+          title="Open menu"
+        >
+          <Menu className="w-5 h-5" />
         </button>
       </div>
 
@@ -210,63 +168,69 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         {/* DAILY NEWS / UPDATES TICKER */}
         <DailyNewsTicker />
 
-        {/* TOTAL EARNINGS BALANCE CARD */}
-        <div className="relative rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/35 to-slate-900/95 border border-cyan-500/40 p-4 shadow-[0_0_20px_rgba(6,182,212,0.18)] overflow-hidden">
-          {/* Subtle cyan ambient highlight */}
-          <div className="absolute -top-10 left-1/4 w-40 h-20 bg-[radial-gradient(closest-side,rgba(6,182,212,0.30),transparent)] rounded-full pointer-events-none" />
-
-          {/* Top row: Label + Balance on left, Cash Out button on right */}
-          <div className="flex items-start justify-between">
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300/80">
-                TOTAL EARNINGS BALANCE
-              </span>
-              <div className="font-mono text-3xl font-extrabold text-cyan-400 tracking-tight drop-shadow-[0_0_15px_rgba(6,182,212,0.65)] mt-0.5">
-                {formatPhp(balancePhp)}
+        {/* BALANCE CARD */}
+        <div className="rounded-2xl bg-gradient-to-br from-cyan-700 to-blue-700 p-4 text-white shadow-lg">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-white/80">Your balance</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <span className="text-3xl">🪙</span>
+                <span className="font-fredoka text-4xl font-bold tracking-tight">{formatPhp(balancePhp)}</span>
+              </div>
+              <div className="text-[11px] text-white/80 font-mono mt-0.5">
+                = {formatPaws(Math.round(balancePhp * 1000))} PawCoins
               </div>
             </div>
 
-            {/* Buttons: Share Earnings & Cash Out */}
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => {
-                  sound.playClick();
-                  onOpenShareEarnings();
-                }}
-                className="p-2 rounded-xl bg-slate-950/90 hover:bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 hover:text-white transition-all cursor-pointer active:scale-95 shadow-[0_0_10px_rgba(6,182,212,0.2)] flex items-center gap-1 text-xs font-bold"
-                title="Share Earnings Card"
-              >
-                <Share2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Share</span>
-              </button>
-
+            <div className="flex flex-col items-end gap-1.5 shrink-0">
               <button
                 onClick={() => {
                   sound.playClick();
                   onOpenCashOut();
                 }}
-                className="px-3.5 py-2 rounded-xl bg-slate-950/90 hover:bg-cyan-950/80 border-2 border-cyan-400 text-white font-extrabold text-xs tracking-wide shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_22px_rgba(6,182,212,0.65)] active:scale-95 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-white text-cyan-700 font-extrabold text-sm cursor-pointer active:scale-95 transition-transform"
               >
                 Cash Out
+              </button>
+              <button
+                onClick={() => {
+                  sound.playClick();
+                  onOpenShareEarnings();
+                }}
+                className="flex items-center gap-1 text-[11px] text-white/85 font-semibold cursor-pointer"
+                title="Share your earnings"
+              >
+                <Share2 className="w-3 h-3" /> Share
               </button>
             </div>
           </div>
 
-          {/* Glowing Cyan Progress Bar */}
-          <div className="w-full bg-slate-950/90 h-2 rounded-full mt-3 overflow-hidden border border-slate-800 p-0.5">
-            <div
-              className="h-full bg-gradient-to-r from-cyan-500 to-sky-400 rounded-full shadow-[0_0_10px_rgba(6,182,212,0.8)] transition-all duration-500"
-              style={{ width: `${thresholdPercent}%` }}
-            />
+          <div className="mt-3">
+            <div className="h-2.5 rounded-full bg-black/25 overflow-hidden">
+              <div className="h-full rounded-full bg-amber-300 transition-all duration-500" style={{ width: `${thresholdPercent}%` }} />
+            </div>
+            <div className="flex justify-between text-[11px] text-white/85 mt-1.5 font-medium">
+              <span>Minimum cash out</span>
+              <span className="font-mono font-bold">
+                {formatPhp(balancePhp)} / {formatPhp(targetThresholdPhp)}
+              </span>
+            </div>
           </div>
+        </div>
 
-          {/* Subtext Underneath */}
-          <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 font-medium">
-            <span>Next Target Threshold:</span>
-            <span className="font-mono text-cyan-300 font-bold flex items-center gap-1">
-              <span>{`P.${(balancePhp % 1).toFixed(2).slice(2) || '65'}/ ${targetThresholdPhp.toFixed(3)}`}</span>
-              <span className="text-cyan-400 text-xs">🐾</span>
-            </span>
+        {/* MASCOT TIP */}
+        <div className="flex items-end gap-2">
+          <div className="shrink-0 -mb-1">
+            <CatMiner size={58} />
+          </div>
+          <div className="flex-1 rounded-2xl rounded-bl-md bg-slate-800 border border-slate-700 px-3 py-2.5 text-[13px] text-slate-100 leading-snug">
+            {miningEndsAt && miningEndsAt <= Date.now()
+              ? 'Meow! Your mining session is done. Claim your PawCoins! 🎉'
+              : !hasClaimedCheckin
+              ? "Don't forget your daily login bonus today! 🎁"
+              : balancePhp >= targetThresholdPhp
+              ? 'You can cash out now! Tap Cash Out to get paid. 💸'
+              : 'Keep going! Mine, walk, play and watch to reach your first cash out. 🐾'}
           </div>
         </div>
 
@@ -294,26 +258,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
           onOpenWatchAd={onOpenWatchAd}
         />
 
-        {/* SCROLLING MARQUEE BANNER */}
-        <div className="rounded-xl bg-slate-950/70 border border-slate-800/80 px-3 py-1.5 overflow-hidden shadow-inner flex flex-col">
-          <div className="whitespace-nowrap overflow-hidden flex items-center text-xs font-semibold text-slate-300">
-            <div className="inline-block animate-[marquee_18s_linear_infinite] flex items-center gap-3">
-              <span className="text-cyan-400">|</span>
-              <span className="text-slate-200">ADS REWARDS</span>
-              <span className="text-cyan-400">•</span>
-              <span className="text-slate-200">🚶 WALKING STEPS</span>
-              <span className="text-cyan-400">•</span>
-              <span className="text-slate-200">ONE WALLET</span>
-              <span className="text-cyan-400">•</span>
-              <span className="text-amber-300">FRUIT TAP REWARDS</span>
-              <span className="text-cyan-400">•</span>
-              <span className="text-slate-200">LUCKY SPINS</span>
-              <span className="text-cyan-400">•</span>
-              <span className="text-emerald-300">DAILY PASSIVE CASH</span>
-              <span className="text-cyan-400">•</span>
-            </div>
-          </div>
-        </div>
 
         {/* HERO CARD: one-tap, 3-hour cat mining */}
         <MiningCard
@@ -333,21 +277,21 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               sound.playClick();
               onOpenDailyLogins();
             }}
-            className={`relative p-3.5 rounded-2xl bg-gradient-to-b from-slate-900/90 to-cyan-950/20 hover:to-cyan-950/40 border shadow-[0_0_12px_rgba(6,182,212,0.1)] flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px] ${
+            className={`relative p-3.5 rounded-2xl bg-gradient-to-b from-slate-900/90 to-cyan-950/20 hover:to-cyan-950/40 border flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px] ${
               !hasClaimedCheckin
-                ? 'border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.45)] ring-2 ring-cyan-400/50 animate-pulse'
+                ? 'border-cyan-400 ring-2 ring-cyan-400/50 '
                 : 'border-cyan-500/30 hover:border-cyan-400/60'
             }`}
           >
             {!hasClaimedCheckin && (
               <span className="absolute top-2 right-2 flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                <span className=" absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-400" />
               </span>
             )}
-            <div className={`text-2xl mb-1 flex items-center justify-center transition-transform ${!hasClaimedCheckin ? 'scale-110 drop-shadow-[0_0_8px_#38bdf8] animate-bounce' : 'group-hover:scale-110'}`}>
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/20 flex items-center justify-center text-2xl mb-1.5">
               <span className="text-2xl">📅</span>
-              <span className="text-[10px] font-bold text-cyan-300 -ml-1">17</span>
+              <span className="text-[10px] font-bold text-cyan-300 -ml-1">{new Date().getDate()}</span>
             </div>
             <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">
               Daily Logins
@@ -360,9 +304,9 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               sound.playClick();
               onOpenWatchAd();
             }}
-            className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-900/90 to-cyan-950/20 hover:to-cyan-950/40 border border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.1)] flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px]"
+            className="p-3.5 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px]"
           >
-            <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center text-2xl mb-1.5">
               📺
             </div>
             <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">
@@ -376,9 +320,9 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               sound.playClick();
               onOpenSpinWheel();
             }}
-            className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-900/90 to-cyan-950/20 hover:to-cyan-950/40 border border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.1)] flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px]"
+            className="p-3.5 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px]"
           >
-            <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center text-2xl mb-1.5">
               🎡
             </div>
             <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">
@@ -392,7 +336,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               sound.playClick();
               onOpenWalking();
             }}
-            className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-900/90 to-cyan-950/20 hover:to-cyan-950/40 border border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.1)] flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px] relative"
+            className="p-3.5 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px] relative"
           >
             {onOpenSocialChallenge && (
               <span
@@ -407,7 +351,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
                 Sprint 🔥
               </span>
             )}
-            <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-2xl mb-1.5">
               🚶
             </div>
             <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">
@@ -424,9 +368,9 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               sound.playClick();
               onOpenScratchCards();
             }}
-            className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-900/90 to-cyan-950/20 hover:to-cyan-950/40 border border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.1)] flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px]"
+            className="p-3.5 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px]"
           >
-            <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-2xl mb-1.5">
               🎟️
             </div>
             <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">
@@ -440,9 +384,9 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               sound.playClick();
               onOpenFruitTap();
             }}
-            className="p-3.5 rounded-2xl bg-gradient-to-b from-slate-900/90 to-cyan-950/20 hover:to-cyan-950/40 border border-cyan-500/30 hover:border-cyan-400/60 shadow-[0_0_12px_rgba(6,182,212,0.1)] flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px]"
+            className="p-3.5 rounded-2xl bg-slate-900 border border-slate-700 hover:border-slate-500 flex flex-col items-center justify-center text-center cursor-pointer transition-all active:scale-96 group min-h-[88px]"
           >
-            <div className="text-2xl mb-1 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center text-2xl mb-1.5">
               🍉
             </div>
             <span className="text-xs font-bold text-slate-200 group-hover:text-cyan-300 transition-colors">

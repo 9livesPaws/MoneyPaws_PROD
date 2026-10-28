@@ -1,3 +1,4 @@
+import { todayKey } from '../utils/mining';
 import React, { useState } from 'react';
 import { HelpCircle, CheckCircle2, XCircle, Award, Sparkles, ChevronRight, RefreshCw } from 'lucide-react';
 import { sound } from '../utils/sound';
@@ -46,7 +47,7 @@ export const DailyTriviaQuiz: React.FC<DailyTriviaQuizProps> = ({
   triviaAnsweredDate,
   onRewardEarned,
 }) => {
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = todayKey();
   const alreadyAnswered = triviaAnsweredDate === todayStr;
 
   const [currentQIndex, setCurrentQIndex] = useState(0);
@@ -87,7 +88,7 @@ export const DailyTriviaQuiz: React.FC<DailyTriviaQuizProps> = ({
   };
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/25 to-slate-900/95 border border-cyan-500/35 p-4 shadow-[0_0_15px_rgba(6,182,212,0.12)] flex flex-col gap-3">
+    <div className="w-full rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/25 to-slate-900/95 border border-cyan-500/35 p-4 flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

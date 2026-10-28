@@ -1,3 +1,4 @@
+import { todayKey } from '../utils/mining';
 import React, { useState, useEffect } from 'react';
 import { Gift, Sparkles, X, CheckCircle2, Clock, Zap, Crown, Award, ChevronRight } from 'lucide-react';
 import { sound } from '../utils/sound';
@@ -77,7 +78,7 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
   const [hasClaimedReward, setHasClaimedReward] = useState(false);
   const [timeUntilReset, setTimeUntilReset] = useState('');
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = todayKey();
   const isAvailableToday = lastLuckyChestDate !== todayStr;
 
   // Calculate live countdown to midnight reset
@@ -191,7 +192,7 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
                 Daily Lucky Chest
               </h3>
               {isAvailableToday ? (
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 uppercase tracking-wider animate-pulse">
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 uppercase tracking-wider ">
                   Ready!
                 </span>
               ) : (
@@ -242,7 +243,7 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
 
             {/* Ambient glows */}
             <div className="absolute -top-16 -left-16 w-44 h-44 bg-[radial-gradient(closest-side,rgba(245,158,11,0.40),transparent)] rounded-full pointer-events-none" />
-            <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-[radial-gradient(closest-side,rgba(6,182,212,0.40),transparent)] rounded-full pointer-events-none" />
+            <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-[radial-gradient(closest-side,rgba(43,196,104,0.40),transparent)] rounded-full pointer-events-none" />
 
             {/* Header info */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold mb-2">
@@ -258,16 +259,16 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
             <div className="my-6 relative w-44 h-44 flex flex-col items-center justify-center">
               {isOpening ? (
                 <div className="flex flex-col items-center animate-bounce">
-                  <div className="text-7xl filter drop-shadow-[0_0_20px_rgba(245,158,11,0.8)] scale-110">
+                  <div className="text-7xl filter drop-scale-110">
                     🎁
                   </div>
-                  <span className="text-xs font-bold font-mono text-amber-300 mt-3 animate-pulse">
+                  <span className="text-xs font-bold font-mono text-amber-300 mt-3 ">
                     Unlocking mystery loot...
                   </span>
                 </div>
               ) : wonReward ? (
                 <div className="flex flex-col items-center animate-in zoom-in-95">
-                  <div className="text-7xl mb-1 filter drop-shadow-[0_0_25px_rgba(245,158,11,0.9)] animate-float">
+                  <div className="text-7xl mb-1 filter drop-animate-float">
                     {wonReward.icon}
                   </div>
                   <div className={`mt-1 font-fredoka text-lg font-bold ${wonReward.tierColor}`}>
@@ -276,7 +277,7 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
                 </div>
               ) : isAvailableToday ? (
                 <div className="flex flex-col items-center">
-                  <div className="text-7xl filter drop-shadow-[0_0_15px_rgba(245,158,11,0.5)] animate-pulse">
+                  <div className="text-7xl filter drop-">
                     🎁
                   </div>
                   <span className="text-xs font-semibold text-cyan-300 mt-2">
@@ -297,7 +298,7 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
             {/* Revealed Prize Details */}
             {wonReward && (
               <div className="w-full p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-slate-900 to-amber-500/15 border border-amber-400/50 mb-4 animate-in slide-in-from-bottom-2">
-                <div className="text-2xl font-mono font-black text-amber-300 drop-shadow">
+                <div className="text-2xl font-mono font-black text-amber-300 ">
                   +{formatPhp(wonReward.php)} ({wonReward.paws} Paws)
                 </div>
 

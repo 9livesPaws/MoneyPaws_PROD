@@ -29,7 +29,7 @@ export const PersonalGoalsSummary: React.FC<PersonalGoalsSummaryProps> = ({
   }
 
   return (
-    <div className="w-full rounded-2xl bg-gradient-to-r from-slate-900/95 via-emerald-950/25 to-slate-900/95 border border-emerald-500/35 p-3.5 shadow-[0_0_15px_rgba(16,185,129,0.12)] flex flex-col gap-2.5">
+    <div className="w-full rounded-2xl bg-gradient-to-r from-slate-900/95 via-emerald-950/25 to-slate-900/95 border border-emerald-500/35 p-3.5 flex flex-col gap-2.5">
       {/* Top Row: Title, Ratio Badge & Percentage */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -42,7 +42,7 @@ export const PersonalGoalsSummary: React.FC<PersonalGoalsSummaryProps> = ({
                 Personal Goals Summary
               </h3>
               {allCompleted && (
-                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 animate-pulse">
+                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 ">
                   All Done!
                 </span>
               )}
@@ -55,7 +55,7 @@ export const PersonalGoalsSummary: React.FC<PersonalGoalsSummaryProps> = ({
 
         {/* Large Percentage Badge */}
         <div className="flex items-baseline gap-1 bg-slate-950/80 px-2.5 py-1 rounded-xl border border-emerald-500/30 shrink-0">
-          <span className="font-mono text-base font-black text-emerald-400 drop-shadow">
+          <span className="font-mono text-base font-black text-emerald-400 ">
             {percent}%
           </span>
           <span className="text-[9px] uppercase font-bold text-slate-400">Done</span>
@@ -65,9 +65,9 @@ export const PersonalGoalsSummary: React.FC<PersonalGoalsSummaryProps> = ({
       {/* Visual Glowing Progress Bar */}
       <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800 p-0.5">
         <div
-          className={`h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(16,185,129,0.7)] ${
+          className={`h-full rounded-full transition-all duration-700 ease-out ${
             allCompleted
-              ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 animate-pulse'
+              ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 '
               : 'bg-gradient-to-r from-teal-500 to-emerald-400'
           }`}
           style={{ width: `${Math.max(4, percent)}%` }}
