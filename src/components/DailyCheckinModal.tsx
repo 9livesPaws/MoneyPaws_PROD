@@ -54,8 +54,8 @@ export const DailyCheckinModal: React.FC<DailyCheckinModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 animate-in fade-in duration-200">
       <div className="relative w-full max-w-sm bg-gradient-to-b from-slate-900 to-slate-950 border border-amber-500/30 rounded-2xl p-5 shadow-2xl shadow-amber-500/10 overflow-hidden">
         {/* Glow decoration */}
-        <div className="absolute -top-12 -left-12 w-36 h-36 bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -bottom-12 -right-12 w-36 h-36 bg-orange-500/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -top-12 -left-12 w-36 h-36 bg-[radial-gradient(closest-side,rgba(245,158,11,0.30),transparent)] rounded-full pointer-events-none" />
+        <div className="absolute -bottom-12 -right-12 w-36 h-36 bg-[radial-gradient(closest-side,rgba(249,115,22,0.30),transparent)] rounded-full pointer-events-none" />
 
         {/* Close Button */}
         <button

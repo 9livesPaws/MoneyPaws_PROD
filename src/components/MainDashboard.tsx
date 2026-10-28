@@ -5,6 +5,8 @@ import { haptics } from '../utils/haptics';
 import { fireRewardConfetti } from '../utils/confetti';
 import { formatPhp } from '../utils/storage';
 import { Leaderboard } from './Leaderboard';
+import { MiningCard } from './MiningCard';
+import { HideableSection } from './HideableSection';
 import { DailyMissions } from './DailyMissions';
 import { DailyNewsTicker } from './DailyNewsTicker';
 import { DailyLuckyChest, ChestReward } from './DailyLuckyChest';
@@ -32,7 +34,12 @@ interface MainDashboardProps {
   batterySaver?: boolean;
   personalGoals: PersonalGoal[];
   triviaAnsweredDate: string;
-  onTapMine: () => void;
+  miningStartedAt: number | null;
+  miningEndsAt: number | null;
+  miningSessionsToday: number;
+  miningEarnedTodayPhp: number;
+  onStartMining: () => void;
+  onClaimMining: () => void;
   onOpenCashOut: () => void;
   onOpenShareEarnings: () => void;
   onOpenMenu: () => void;
@@ -53,13 +60,6 @@ interface MainDashboardProps {
   onOpenSocialChallenge?: () => void;
 }
 
-interface FloatingTap {
-  id: number;
-  x: number;
-  y: number;
-  text: string;
-}
-
 export const MainDashboard: React.FC<MainDashboardProps> = ({
   balancePhp,
   targetThresholdPhp,
@@ -76,7 +76,12 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   batterySaver = false,
   personalGoals,
   triviaAnsweredDate,
-  onTapMine,
+  miningStartedAt,
+  miningEndsAt,
+  miningSessionsToday,
+  miningEarnedTodayPhp,
+  onStartMining,
+  onClaimMining,
   onOpenCashOut,
   onOpenShareEarnings,
   onOpenMenu,
@@ -96,9 +101,31 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
   onTriviaReward,
   onOpenSocialChallenge,
 }) => {
-  const [floatingTaps, setFloatingTaps] = useState<FloatingTap[]>([]);
-  const [isMiningPressed, setIsMiningPressed] = useState(false);
-  const [nextId, setNextId] = useState(1);
+  const [hiddenSections, setHiddenSections] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('mp_hidden_sections') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const hideSection = (id: string) =>
+    setHiddenSections((prev) => {
+      const next = [...prev, id];
+      try {
+        localStorage.setItem('mp_hidden_sections', JSON.stringify(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  const showAllSections = () => {
+    setHiddenSections([]);
+    try {
+      localStorage.removeItem('mp_hidden_sections');
+    } catch {
+      /* ignore */
+    }
+  };
   const [currentTime, setCurrentTime] = useState('12:04 AM');
 
   // Realistic Android clock
@@ -115,55 +142,6 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
     const interval = setInterval(updateTime, 10000);
     return () => clearInterval(interval);
   }, []);
-
-  // Handle central "TAP TO MINE"
-  const handleTap = (e: React.MouseEvent<HTMLButtonElement> | React.TouchEvent<HTMLButtonElement>) => {
-    sound.playCoin();
-    haptics.tapMine();
-    setIsMiningPressed(true);
-    setTimeout(() => setIsMiningPressed(false), 150);
-
-    // Get click coordinates for floating reward text
-    let clientX = 0;
-    let clientY = 0;
-    if ('touches' in e && e.touches.length > 0) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else if ('clientX' in e) {
-      clientX = e.clientX;
-      clientY = e.clientY;
-    }
-
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relX = clientX ? clientX - rect.left : rect.width / 2;
-    const relY = clientY ? clientY - rect.top : rect.height / 2;
-
-    const newFloat: FloatingTap = {
-      id: nextId,
-      x: relX,
-      y: relY,
-      text: '+₱0.01',
-    };
-
-    setNextId((prev) => prev + 1);
-    setFloatingTaps((prev) => [...prev.slice(-6), newFloat]);
-
-    onTapMine();
-
-    // Occasional confetti on milestones
-    if ((tapMineCount + 1) % 25 === 0) {
-      fireRewardConfetti(0.4);
-    }
-  };
-
-  // Clean up floating taps after animation
-  useEffect(() => {
-    if (floatingTaps.length === 0) return;
-    const timer = setTimeout(() => {
-      setFloatingTaps((prev) => prev.slice(1));
-    }, 700);
-    return () => clearTimeout(timer);
-  }, [floatingTaps]);
 
   // Threshold percentage
   const thresholdPercent = Math.min(100, Math.max(3, (balancePhp / targetThresholdPhp) * 100));
@@ -235,7 +213,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
         {/* TOTAL EARNINGS BALANCE CARD */}
         <div className="relative rounded-2xl bg-gradient-to-b from-slate-900/95 via-cyan-950/35 to-slate-900/95 border border-cyan-500/40 p-4 shadow-[0_0_20px_rgba(6,182,212,0.18)] overflow-hidden">
           {/* Subtle cyan ambient highlight */}
-          <div className="absolute -top-10 left-1/4 w-40 h-20 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -top-10 left-1/4 w-40 h-20 bg-[radial-gradient(closest-side,rgba(6,182,212,0.30),transparent)] rounded-full pointer-events-none" />
 
           {/* Top row: Label + Balance on left, Cash Out button on right */}
           <div className="flex items-start justify-between">
@@ -337,54 +315,15 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
           </div>
         </div>
 
-        {/* HERO CENTER CARD: TAP TO MINE */}
-        <div id="mine-section" className="relative rounded-2xl bg-gradient-to-b from-slate-900/90 via-cyan-950/30 to-slate-900/90 border border-cyan-500/40 p-5 shadow-[0_0_25px_rgba(6,182,212,0.18)] flex flex-col items-center justify-center overflow-hidden scroll-mt-6">
-          {/* Subtle cyan ring glow */}
-          <div className="absolute w-52 h-52 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
-
-          {/* Central Circular Glowing Button */}
-          <div className="relative">
-            {/* Ambient Star Sparkle / Flare on upper right edge */}
-            <div className="absolute -top-1.5 -right-1.5 z-20 pointer-events-none text-cyan-200 animate-pulse">
-              <Sparkles className="w-5 h-5 filter drop-shadow-[0_0_8px_#38bdf8]" />
-            </div>
-
-            <button
-              onClick={handleTap}
-              className={`relative w-36 h-36 rounded-full bg-gradient-to-b from-cyan-500/30 via-slate-950 to-cyan-950/80 border-2 border-cyan-400/80 shadow-[0_0_35px_rgba(6,182,212,0.5)] flex flex-col items-center justify-center transition-all cursor-pointer select-none active:scale-92 ${
-                isMiningPressed ? 'scale-95 shadow-[0_0_45px_rgba(6,182,212,0.85)] border-cyan-300' : 'hover:scale-102'
-              }`}
-            >
-              {/* Internal Cyan Circle Glow */}
-              <div className="w-28 h-28 rounded-full bg-cyan-500/15 border border-cyan-400/40 flex flex-col items-center justify-center">
-                {/* Two Cute Cyan Paw Prints */}
-                <div className="flex items-center gap-1.5 text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.9)] animate-float">
-                  <span className="text-3xl select-none">🐾</span>
-                  <span className="text-2xl select-none -mt-2">🐾</span>
-                </div>
-              </div>
-
-              {/* Floating Tap Text */}
-              {floatingTaps.map((f) => (
-                <span
-                  key={f.id}
-                  style={{ left: `${f.x}px`, top: `${f.y}px` }}
-                  className="absolute font-mono font-extrabold text-sm text-cyan-300 drop-shadow-[0_0_6px_rgba(6,182,212,0.9)] pointer-events-none -translate-x-1/2 -translate-y-8 animate-out fade-out slide-out-to-top duration-700"
-                >
-                  {f.text}
-                </span>
-              ))}
-            </button>
-          </div>
-
-          {/* TAP TO MINE Text Underneath */}
-          <span className="mt-3.5 font-fredoka font-bold text-base tracking-wider text-cyan-400 drop-shadow-[0_0_10px_rgba(6,182,212,0.7)] uppercase">
-            TAP TO MINE
-          </span>
-          <span className="text-[10px] text-slate-400 mt-0.5">
-            Taps Today: <strong className="text-cyan-300 font-mono">{tapMineCount}</strong> • Micro-payouts credited
-          </span>
-        </div>
+        {/* HERO CARD: one-tap, 3-hour cat mining */}
+        <MiningCard
+          miningStartedAt={miningStartedAt}
+          miningEndsAt={miningEndsAt}
+          sessionsToday={miningSessionsToday}
+          earnedTodayPhp={miningEarnedTodayPhp}
+          onStart={onStartMining}
+          onClaim={onClaimMining}
+        />
 
         {/* 6 ACTION GRID CARDS (2 Columns x 3 Rows) */}
         <div className="grid grid-cols-2 gap-2.5 pb-6">
@@ -514,6 +453,7 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
 
         {/* Daily Missions Component */}
         <div id="missions-section" className="pb-1 scroll-mt-4">
+<HideableSection id="missions" hidden={hiddenSections} onHide={hideSection}>
           <DailyMissions
             stepsToday={stepsToday}
             gamesPlayedToday={gamesPlayedToday}
@@ -530,10 +470,12 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
               document.getElementById('mine-section')?.scrollIntoView({ behavior: 'smooth' });
             }}
           />
+</HideableSection>
         </div>
 
         {/* Daily Habit Tracker & Weekly Consistency Section */}
         <div id="habits-section" className="pb-1 scroll-mt-4 flex flex-col gap-2.5">
+<HideableSection id="habitsWeekly" hidden={hiddenSections} onHide={hideSection}>
 <Suspense fallback={<div className="h-40" />}>
           <HabitsWeeklyConsistency
             personalGoals={personalGoals}
@@ -542,7 +484,9 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
             }}
           />
 </Suspense>
+</HideableSection>
 
+<HideableSection id="habitTracker" hidden={hiddenSections} onHide={hideSection}>
           <DailyHabitTracker
             habits={personalGoals}
             onToggleHabit={onToggleGoal}
@@ -550,18 +494,22 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
             onEditHabit={onEditGoal}
             onDeleteHabit={onDeleteGoal}
           />
+</HideableSection>
         </div>
 
         {/* Daily Trivia Quiz Component */}
         <div className="pb-1">
+<HideableSection id="trivia" hidden={hiddenSections} onHide={hideSection}>
           <DailyTriviaQuiz
             triviaAnsweredDate={triviaAnsweredDate}
             onRewardEarned={onTriviaReward}
           />
+</HideableSection>
         </div>
 
         {/* 7-Day Cross-Activity Weekly Performance Analytics */}
         <div id="analytics-section" className="pb-1 scroll-mt-4">
+<HideableSection id="weeklyPerf" hidden={hiddenSections} onHide={hideSection}>
 <Suspense fallback={<div className="h-40" />}>
           <WeeklyPerformanceChart
             stepsToday={stepsToday}
@@ -570,16 +518,28 @@ export const MainDashboard: React.FC<MainDashboardProps> = ({
             totalHabitsCount={personalGoals.length}
           />
 </Suspense>
+</HideableSection>
         </div>
 
         {/* Live Top 10 Earners Leaderboard */}
         <div id="leaderboard-section" className="pb-4 scroll-mt-4">
+<HideableSection id="leaderboard" hidden={hiddenSections} onHide={hideSection}>
           <Leaderboard
             currentUserTotalEarned={currentUserTotalEarned}
             currentUserName={currentUserName}
             onOpenProfile={onOpenProfile}
           />
+</HideableSection>
         </div>
+
+        {hiddenSections.length > 0 && (
+          <button
+            onClick={showAllSections}
+            className="mx-auto mb-4 px-4 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs font-bold text-cyan-300 cursor-pointer"
+          >
+            Show hidden sections ({hiddenSections.length})
+          </button>
+        )}
       </div>
     </div>
   );

@@ -61,7 +61,12 @@ export interface UserState {
   balancePhp: number; // In Philippine Peso (₱), e.g. 0.65
   targetThresholdPhp: number; // e.g. 5.50 or 50.00 for initial cashout
   totalEarnedPhp: number;
-  tapMineCount: number;
+  tapMineCount: number; // completed cat-mining sessions (all time)
+  miningStartedAt: number | null;
+  miningEndsAt: number | null;
+  miningDay: string;
+  miningSessionsToday: number;
+  miningEarnedTodayPhp: number;
   stepsToday: number;
   stepsGoal: number;
   gamesPlayedToday: number;

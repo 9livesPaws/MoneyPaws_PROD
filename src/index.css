@@ -66,3 +66,13 @@ button, a, input, select, textarea, [role="button"] {
 /* Popups taller than the screen: scroll from the top so the close button is always reachable */
 .fixed.inset-0.items-center { overflow-y: auto; overscroll-behavior: contain; }
 .fixed.inset-0.items-center > * { margin-top: auto; margin-bottom: auto; }
+
+/* Cat art animations (light, GPU-friendly) */
+@keyframes mp-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+@keyframes mp-swing { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(16deg); } }
+@keyframes mp-floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes mp-dot { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+.mp-blink { transform-box: fill-box; transform-origin: center; animation: mp-blink 4.5s infinite; }
+.mp-swing { transform-box: view-box; transform-origin: 80px 96px; animation: mp-swing 1s ease-in-out infinite; }
+.mp-float { animation: mp-floaty 2.4s ease-in-out infinite; }
+.mp-dot { animation: mp-dot 1s ease-in-out infinite; }

@@ -3,6 +3,7 @@ import { X, Play, CheckCircle2, Sparkles, ShieldCheck, ExternalLink } from 'luci
 import { sound } from '../../utils/sound';
 import { fireRewardConfetti } from '../../utils/confetti';
 import { isNativeAds, showRewardedAd } from '../../utils/ads';
+import { CatLoader, CatMiner } from '../CatArt';
 
 interface WatchAndEarnModalProps {
   isOpen: boolean;
@@ -138,29 +139,31 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
               sound.playClick();
               onClose();
             }}
-            className="p-1 rounded-full text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+            className="p-1.5 rounded-full text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Sponsor Video Screen Box */}
-        <div className={`relative h-56 bg-gradient-to-br ${sponsor.color} flex flex-col items-center justify-center p-6 text-center text-white overflow-hidden select-none`}>
+        <div className={`relative h-56 bg-gradient-to-b from-indigo-950 via-slate-950 to-cyan-950 flex flex-col items-center justify-center p-6 text-center text-white overflow-hidden select-none`}>
           {/* Animated background rings */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/10 to-transparent pointer-events-none" />
 
-          <div className="text-5xl mb-2 animate-bounce">{sponsor.icon}</div>
+          <div className="mb-1 mp-float"><CatMiner size={isNativeAds ? 84 : 64} mining /></div>
           <h3 className="font-fredoka text-xl font-bold tracking-tight text-white drop-shadow">
-            {sponsor.productName}
+            {isNativeAds ? 'MoneyPaws Rewards' : sponsor.productName}
           </h3>
           <p className="text-xs text-white/85 mt-1 line-clamp-2 max-w-xs font-medium">
-            {sponsor.tagline}
+            {isNativeAds ? 'Watch a short video ad and earn PawCoins' : sponsor.tagline}
           </p>
 
-          <div className="mt-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/30 border border-white/20 text-[11px] font-semibold">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Sample Sponsor (preview)</span>
-          </div>
+          {!isNativeAds && (
+            <div className="mt-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/30 border border-white/20 text-[11px] font-semibold">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+              <span>Sample Sponsor (preview)</span>
+            </div>
+          )}
 
           {/* Progress / Play overlay */}
           {!isPlaying && !isCompleted && (
@@ -174,9 +177,11 @@ export const WatchAndEarnModal: React.FC<WatchAndEarnModalProps> = ({
               <span className="text-xs font-bold text-amber-300 mt-3">
                 Tap to Watch & Earn +200 PawCoins
               </span>
-              <span className="text-[10px] text-slate-400 mt-0.5">Duration: 12 seconds</span>
+              <span className="text-[10px] text-slate-400 mt-0.5">{isNativeAds ? 'Short video ad' : 'Duration: 12 seconds'}</span>
             </div>
           )}
+
+          {adLoading && <CatLoader message="Loading your ad…" />}
 
           {isPlaying && (
             <div className="absolute top-3 right-3 bg-black/60 px-2.5 py-1 rounded-full border border-white/20 text-xs font-mono font-bold text-amber-300 flex items-center gap-1">

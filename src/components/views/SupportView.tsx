@@ -21,11 +21,11 @@ const FAQS = [
   },
   {
     q: 'How does Walking to Earn work?',
-    a: 'MoneyPaws taps into your Android phone motion sensor to detect walking and steps automatically. You can also use the brisk walk simulator. Every 250 steps converts directly into real cash balance!',
+    a: 'MoneyPaws taps into your Android phone motion sensor to detect walking and steps automatically. Every 250 steps converts directly into real cash balance!',
   },
   {
-    q: 'How does Tap to Mine generate income?',
-    a: 'Tapping the central Paw button triggers high-frequency micro-hashing. In the background, sponsor reward pools share real advertising revenue directly with you in real time.',
+    q: 'How does Cat Mining work?',
+    a: 'Tap once to start a 3-hour mining session. Your cat keeps mining even when the app is closed. When the timer ends, open the app and claim your PawCoins. There is a daily cap, so you can mine up to 3 sessions per day.',
   },
   {
     q: 'Where do I reach technical support?',
@@ -148,7 +148,7 @@ export const SupportView: React.FC<SupportViewProps> = ({ tickets, onAddTicket, 
                 className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white focus:outline-none focus:border-cyan-400"
               >
                 <option value="withdrawal">Withdrawal / Cash Out Payout</option>
-                <option value="mining">Tap to Mine Inquiry</option>
+                <option value="mining">Cat Mining Inquiry</option>
                 <option value="pedometer">Walking & Step Counter</option>
                 <option value="referral">Referral Bonus</option>
                 <option value="other">Other Technical Issue</option>

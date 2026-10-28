@@ -2,45 +2,33 @@ import { UserState, Transaction } from '../types';
 
 const STORAGE_KEY = 'moneypaws_app_state_v2';
 
-const INITIAL_TRANSACTIONS: Transaction[] = [
-  {
-    id: 'tx-1',
-    type: 'MINE_TAP',
-    amountPhp: 0.15,
-    title: 'Tap to Mine - Paw Power Bonus',
-    timestamp: Date.now() - 1000 * 60 * 20,
-    status: 'COMPLETED',
-  },
-  {
-    id: 'tx-2',
-    type: 'DAILY_LOGIN',
-    amountPhp: 0.50,
-    title: 'Day 1 Daily Login Reward',
-    timestamp: Date.now() - 1000 * 60 * 60 * 3,
-    status: 'COMPLETED',
-  },
-];
+const INITIAL_TRANSACTIONS: Transaction[] = [];
 
 export const DEFAULT_USER_STATE: UserState = {
-  balancePhp: 0.65, // Exactly matching screenshot "₱0.65"
+  balancePhp: 0,
   targetThresholdPhp: 10.00, // Lowest cash-out tier: ₱10 = 10,000 PawCoins
-  totalEarnedPhp: 0.65,
-  tapMineCount: 14,
-  stepsToday: 1240,
+  totalEarnedPhp: 0,
+  tapMineCount: 0,
+  miningStartedAt: null,
+  miningEndsAt: null,
+  miningDay: '',
+  miningSessionsToday: 0,
+  miningEarnedTodayPhp: 0,
+  stepsToday: 0,
   stepsGoal: 5000,
-  gamesPlayedToday: 1,
+  gamesPlayedToday: 0,
   claimedMissionIds: [],
   minerBatteryPercent: 88,
   minerLastClaimed: Date.now() - 1000 * 60 * 15,
-  consecutiveDays: 1,
+  consecutiveDays: 0,
   lastCheckinDate: '',
   lastLuckyChestDate: '',
   freeSpins: 3,
   freeScratchCards: 3,
   adsWatchedToday: 0,
   referralCode: 'PAW-ANDROID77',
-  referralCount: 1,
-  referralEarningsPhp: 0.20,
+  referralCount: 0,
+  referralEarningsPhp: 0,
   transactions: INITIAL_TRANSACTIONS,
   tickets: [],
   soundEnabled: true,
@@ -52,7 +40,7 @@ export const DEFAULT_USER_STATE: UserState = {
     { id: 'goal-3', title: 'Track daily budget & savings', icon: '📊', rewardPaws: 50, completed: false, streakDays: 3 },
   ],
   triviaAnsweredDate: '',
-  unlockedAchievementIds: ['ach-first-step', 'ach-first-mine'],
+  unlockedAchievementIds: [],
   userName: 'Paws Explorer',
   userEmail: 'user@moneypaws.com',
 };

@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 
 import type { Session } from '@supabase/supabase-js';
 import { AuthScreen } from './components/AuthScreen';
 import { RewardCelebration } from './components/RewardCelebration';
+import { MINING_DAILY_CAP_PHP, MINING_DURATION_MS, MINING_REWARD_PHP, todayKey } from './utils/mining';
 import { initAds, showBottomBanner, hideBanner, resumeBanner, removeBanner, isNativeAds } from './utils/ads';
 import { pushProgress, pullProgress } from './utils/supabase';
 import { getSupabase, getCurrentSession, isAuthBusy, signOut, supabaseConfigured } from './utils/supabase';
@@ -96,7 +97,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     const push = async () => {
       if (!syncReady.current) return;
       const s = stateRef.current;
-      const sig = [s.balancePhp, s.totalEarnedPhp, s.adsWatchedToday, s.stepsToday, s.gamesPlayedToday, s.tapMineCount, s.consecutiveDays, s.referralCount, s.transactions.length].join('|');
+      const sig = [s.balancePhp, s.totalEarnedPhp, s.adsWatchedToday, s.stepsToday, s.gamesPlayedToday, s.tapMineCount, s.miningEndsAt, s.consecutiveDays, s.referralCount, s.transactions.length].join('|');
       if (sig === lastSig.current) return;
       lastSig.current = sig;
       try {
@@ -182,21 +183,45 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
     []
   );
 
-  // TAP TO MINE handler
-  const handleTapMine = useCallback(() => {
+  // CAT MINING: one tap starts a 3-hour session; claim the reward when it finishes (daily cap applies)
+  const handleStartMining = useCallback(() => {
     setState((prev) => {
-      const increment = 0.01;
-      const nextBalance = Number((prev.balancePhp + increment).toFixed(2));
-      const nextTotal = Number((prev.totalEarnedPhp + increment).toFixed(2));
-
+      const today = todayKey();
+      const sessions = prev.miningDay === today ? prev.miningSessionsToday : 0;
+      const earned = prev.miningDay === today ? prev.miningEarnedTodayPhp : 0;
+      if (prev.miningEndsAt || earned >= MINING_DAILY_CAP_PHP - 0.0001) return prev;
+      const now = Date.now();
       return {
         ...prev,
-        balancePhp: nextBalance,
-        totalEarnedPhp: nextTotal,
-        tapMineCount: prev.tapMineCount + 1,
+        miningStartedAt: now,
+        miningEndsAt: now + MINING_DURATION_MS,
+        miningDay: today,
+        miningSessionsToday: sessions,
+        miningEarnedTodayPhp: earned,
       };
     });
   }, []);
+
+  const handleClaimMining = useCallback(() => {
+    const s0 = stateRef.current;
+    if (!s0.miningEndsAt || Date.now() < s0.miningEndsAt) return;
+    const today = todayKey();
+    const earned = s0.miningDay === today ? s0.miningEarnedTodayPhp : 0;
+    const reward = Number(Math.min(MINING_REWARD_PHP, Math.max(0, MINING_DAILY_CAP_PHP - earned)).toFixed(2));
+    setState((prev) => ({
+      ...prev,
+      miningStartedAt: null,
+      miningEndsAt: null,
+      miningDay: today,
+      miningSessionsToday: (prev.miningDay === today ? prev.miningSessionsToday : 0) + 1,
+      miningEarnedTodayPhp: Number((earned + reward).toFixed(2)),
+      tapMineCount: prev.tapMineCount + 1,
+    }));
+    if (reward > 0) {
+      addEarnings(reward, 'Cat mining session', 'MINE_TAP');
+      celebrate(reward, 'Cat mining session complete');
+    }
+  }, [addEarnings, celebrate]);
 
   // Add walking steps
   const handleAddSteps = useCallback((amount: number) => {
@@ -647,7 +672,7 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
           <MainDashboard
             balancePhp={state.balancePhp}
             targetThresholdPhp={state.targetThresholdPhp}
-            tapMineCount={state.tapMineCount}
+            tapMineCount={state.miningDay === todayKey() ? state.miningSessionsToday : 0}
             currentUserTotalEarned={state.totalEarnedPhp}
             currentUserName={state.userName}
             stepsToday={state.stepsToday}
@@ -660,7 +685,12 @@ function MainApp({ userId, username, email, onSignOut }: MainAppProps) {
             batterySaver={state.batterySaver}
             personalGoals={state.personalGoals}
             triviaAnsweredDate={state.triviaAnsweredDate}
-            onTapMine={handleTapMine}
+            miningStartedAt={state.miningEndsAt ? state.miningStartedAt : null}
+            miningEndsAt={state.miningEndsAt}
+            miningSessionsToday={state.miningDay === todayKey() ? state.miningSessionsToday : 0}
+            miningEarnedTodayPhp={state.miningDay === todayKey() ? state.miningEarnedTodayPhp : 0}
+            onStartMining={handleStartMining}
+            onClaimMining={handleClaimMining}
             onOpenCashOut={() => setActiveModal('cashout')}
             onOpenShareEarnings={() => setActiveModal('shareEarnings')}
             onOpenMenu={() => setActiveModal('menu')}

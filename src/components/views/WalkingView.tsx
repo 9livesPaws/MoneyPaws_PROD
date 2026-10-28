@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Footprints, Flame, Trophy, Award, Zap, Check, ArrowRight } from 'lucide-react';
 import { sound } from '../../utils/sound';
 import { haptics } from '../../utils/haptics';
@@ -31,28 +31,47 @@ export const WalkingView: React.FC<WalkingViewProps> = ({
   const calories = Math.round(stepsToday * 0.04);
   const progressPercent = Math.min(100, Math.round((stepsToday / stepsGoal) * 100));
 
-  // Device motion sensor for real Android accelerometer step detection
+  // Device motion sensor: step detection on the overall movement strength (works in any phone position).
+  // Steps are collected in a ref and added once per second, so the screen does not re-render on every step.
+  const pendingSteps = useRef(0);
+  const addStepsRef = useRef(onAddSteps);
+  addStepsRef.current = onAddSteps;
+
   useEffect(() => {
-    let lastZ = 0;
-    let lastTime = Date.now();
+    let gravity = 9.81; // slow-moving estimate of gravity
+    let lastStepAt = 0;
+    let armed = true;
+    let burstTimer: ReturnType<typeof setTimeout> | undefined;
 
     const handleMotion = (event: DeviceMotionEvent) => {
-      const acc = event.accelerationIncludingGravity;
-      if (!acc || acc.z === null) return;
-
+      const a = event.accelerationIncludingGravity;
+      if (!a || a.x === null || a.y === null || a.z === null) return;
+      const mag = Math.sqrt(a.x * a.x + a.y * a.y + a.z * a.z);
+      gravity = gravity * 0.92 + mag * 0.08;
+      const movement = mag - gravity; // positive when the phone is pushed up by a footfall
       const now = Date.now();
-      const deltaZ = Math.abs(acc.z - lastZ);
 
-      // Simple peak detection threshold for step counting
-      if (deltaZ > 4.5 && now - lastTime > 320) {
-        lastTime = now;
-        lastZ = acc.z;
+      if (movement > 1.6 && armed && now - lastStepAt > 380) {
+        armed = false;
+        lastStepAt = now;
+        pendingSteps.current += 1;
         sound.playStep();
-        onAddSteps(1);
         setRecentStepBurst(true);
-        setTimeout(() => setRecentStepBurst(false), 500);
+        clearTimeout(burstTimer);
+        burstTimer = setTimeout(() => setRecentStepBurst(false), 350);
+      } else if (movement < 0.4) {
+        armed = true; // must settle before the next step counts
       }
     };
+
+    const flush = () => {
+      if (pendingSteps.current > 0) {
+        const n = pendingSteps.current;
+        pendingSteps.current = 0;
+        addStepsRef.current(n);
+      }
+    };
+    const flushTimer = setInterval(flush, 1000);
 
     if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
       window.addEventListener('devicemotion', handleMotion);
@@ -60,11 +79,14 @@ export const WalkingView: React.FC<WalkingViewProps> = ({
     }
 
     return () => {
+      clearInterval(flushTimer);
+      clearTimeout(burstTimer);
+      flush();
       if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
         window.removeEventListener('devicemotion', handleMotion);
       }
     };
-  }, [onAddSteps]);
+  }, []);
 
   // Step simulation button
   const handleSimulateStep = (amount: number = 25) => {
@@ -92,8 +114,8 @@ export const WalkingView: React.FC<WalkingViewProps> = ({
     <div className="flex flex-col gap-4 text-white">
       {/* Top Card: Circle Progress */}
       <div className="relative rounded-2xl bg-gradient-to-b from-slate-900/90 to-cyan-950/40 border border-cyan-500/30 p-5 flex flex-col items-center justify-center text-center shadow-lg shadow-cyan-950/50">
-        <div className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[10px] text-cyan-300">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+        <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[10px] text-cyan-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
           <span>{isSensorActive ? 'Motion Sensor Active' : 'Pedometer Ready'}</span>
         </div>
 
@@ -133,8 +155,8 @@ export const WalkingView: React.FC<WalkingViewProps> = ({
           {/* Center text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <Footprints
-              className={`w-7 h-7 text-cyan-400 mb-1 transition-transform ${
-                recentStepBurst ? 'scale-125 text-amber-300' : ''
+              className={`w-7 h-7 text-cyan-400 mb-1 transition-colors ${
+                recentStepBurst ? 'text-amber-300' : ''
               }`}
             />
             <span className="text-2xl font-extrabold font-mono text-white tracking-tight">

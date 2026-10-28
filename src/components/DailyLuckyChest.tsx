@@ -170,7 +170,7 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
       >
         {/* Glow ambient highlight */}
         {isAvailableToday && (
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/15 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-[radial-gradient(closest-side,rgba(245,158,11,0.30),transparent)] rounded-full pointer-events-none" />
         )}
 
         {/* Left: Animated Chest Icon */}
@@ -241,8 +241,8 @@ export const DailyLuckyChest: React.FC<DailyLuckyChestProps> = ({
             </button>
 
             {/* Ambient glows */}
-            <div className="absolute -top-16 -left-16 w-44 h-44 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-16 -left-16 w-44 h-44 bg-[radial-gradient(closest-side,rgba(245,158,11,0.40),transparent)] rounded-full pointer-events-none" />
+            <div className="absolute -bottom-16 -right-16 w-44 h-44 bg-[radial-gradient(closest-side,rgba(6,182,212,0.40),transparent)] rounded-full pointer-events-none" />
 
             {/* Header info */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold mb-2">
